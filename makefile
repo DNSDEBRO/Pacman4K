@@ -2,71 +2,71 @@
 # Makefile for Pacman4K
 #
 
-PROJ					:=	pacman4K
-INCLUDES				:=	./includes
-ASM		                :=	dasm
-SOURCEDIR               := ./source
-SELFBUILDDIR            := ./build/self
-SELFDEBUGDIR			:= ./debug/self
-ATARIAGEBUILDDIR		:= ./build/atariage
-ATARIAGEDEBUGDIR		:= ./debug/atariage
-BUILD_NAME				:= $(PROJ)
+PROJ			:= pacman4K
+INCLUDES		:= ./includes
+ASM			:= dasm
+SOURCE_DIR		:= ./source
+SELF_BUILD_DIR		:= ./build/self
+SELF_DEBUG_DIR		:= ./debug/self
+ATARIAGE_BUILD_DIR	:= ./build/atariage
+ATARIAGE_DEBUG_DIR	:= ./debug/atariage
+BUILD_NAME		:= $(PROJ)
 
 #
 # --- Defines ---
 #
-TRUE					:=	1
-FALSE					:=	0
+TRUE			:= 1
+FALSE			:= 0
 
 #
 # --- Compile Region Variables ---
 #
-NTSC					:=	0
-PAL50					:=	1
-PAL60					:=	2
+NTSC			:= 0
+PAL50			:= 1
+PAL60			:= 2
 
 #
 # --- Publisher Variables ---
 #
-ATARIAGE				:=	0
-SELF					:=	1
+ATARIAGE		:= 0
+SELF			:= 1
 
 #
 # --- Build Defines ---
 #
-ASMEXT					:=	asm
-LSTEXT					:=	lst
-BUILDEXT				:=	bin
+ASMEXT			:= asm
+LSTEXT			:= lst
+BUILDEXT		:= bin
 
 # --- Tool settings ---
-ASMFLAGS				:=	-f3 -v3 -I$(INCLUDES)
+ASMFLAGS		:= -f3 -v3 -I$(INCLUDES)
 
 # --- Build Steps ---
-buildselfslowntsc: selfpublisher slowspeed regionntsc buildproj
-buildselfslowpal50: selfpublisher slowspeed regionpal50 buildproj
-buildselfslowpal60: selfpublisher slowspeed regionpal60 buildproj
-buildselffastntsc: selfpublisher fastspeed regionntsc buildproj
-buildselffastpal50: selfpublisher fastspeed regionpal50 buildproj
-buildselffastpal60: selfpublisher fastspeed regionpal60 buildproj
-buildatariageslowntsc: atariagepublisher slowspeed regionntsc buildproj
-buildatariageslowpal50: atariagepublisher slowspeed regionpal50 buildproj
-buildatariageslowpal60: atariagepublisher slowspeed regionpal60 buildproj
-buildatariagefastntsc: atariagepublisher fastspeed regionntsc buildproj
-buildatariagefastpal50: atariagepublisher fastspeed regionpal50 buildproj
-buildatariagefastpal60: atariagepublisher fastspeed regionpal60 buildproj
+build_self_slow_ntsc: self_publisher slow_speed region_ntsc buildproj
+build_self_slow_pal50: self_publisher slow_speed region_pal50 buildproj
+build_self_slow_pal60: self_publisher slow_speed region_pal60 buildproj
+build_self_fast_ntsc: self_publisher fast_speed region_ntsc buildproj
+build_self_fast_pal50: self_publisher fast_speed region_pal50 buildproj
+build_self_fast_pal60: self_publisher fast_speed region_pal60 buildproj
+build_atariage_slow_ntsc: atariage_publisher slow_speed region_ntsc buildproj
+build_atariage_slow_pal50: atariage_publisher slow_speed region_pal50 buildproj
+build_atariage_slow_pal60: atariage_publisher slow_speed region_pal60 buildproj
+build_atariage_fast_ntsc: atariage_publisher fast_speed region_ntsc buildproj
+build_atariage_fast_pal50: atariage_publisher fast_speed region_pal50 buildproj
+build_atariage_fast_pal60: atariage_publisher fast_speed region_pal60 buildproj
 
-buildselfcheatslowntsc: selfpublishercheat slowspeed regionntsc buildproj
-buildselfcheatslowpal50: selfpublishercheat slowspeed regionpal50 buildproj
-buildselfcheatslowpal60: selfpublishercheat slowspeed regionpal60 buildproj
-buildselfcheatfastntsc: selfpublishercheat fastspeed regionntsc buildproj
-buildselfcheatfastpal50: selfpublishercheat fastspeed regionpal50 buildproj
-buildselfcheatfastpal60: selfpublishercheat fastspeed regionpal60 buildproj
-buildatariagecheatslowntsc: atariagepublishercheat slowspeed regionntsc buildproj
-buildatariagecheatslowpal50: atariagepublishercheat slowspeed regionpal50 buildproj
-buildatariagecheatslowpal60: atariagepublishercheat slowspeed regionpal60 buildproj
-buildatariagecheatfastntsc: atariagepublishercheat fastspeed regionntsc buildproj
-buildatariagecheatfastpal50: atariagepublishercheat fastspeed regionpal50 buildproj
-buildatariagecheatfastpal60: atariagepublishercheat fastspeed regionpal60 buildproj
+build_self_cheat_slow_ntsc: self_publisher_cheat slow_speed region_ntsc buildproj
+build_self_cheat_slow_pal50: self_publisher_cheat slow_speed region_pal50 buildproj
+build_self_cheat_slow_pal60: self_publisher_cheat slow_speed region_pal60 buildproj
+build_self_cheat_fast_ntsc: self_publisher_cheat fast_speed region_ntsc buildproj
+build_self_cheat_fast_pal50: self_publisher_cheat fast_speed region_pal50 buildproj
+build_self_cheat_fast_pal60: self_publisher_cheat fast_speed region_pal60 buildproj
+build_atariage_cheat_slow_ntsc: atariage_publisher_cheat slow_speed region_ntsc buildproj
+build_atariage_cheat_slow_pal50: atariage_publisher_cheat slow_speed region_pal50 buildproj
+build_atariage_cheat_slow_pal60: atariage_publisher_cheat slow_speed region_pal60 buildproj
+build_atariage_cheat_fast_ntsc: atariage_publisher_cheat fast_speed region_ntsc buildproj
+build_atariage_cheat_fast_pal50: atariage_publisher_cheat fast_speed region_pal50 buildproj
+build_atariage_cheat_fast_pal60: atariage_publisher_cheat fast_speed region_pal60 buildproj
 
 buildproj:
 	$(ASM) $(SOURCEDIR)/$(PROJ).$(ASMEXT) \
@@ -81,53 +81,53 @@ buildproj:
 #
 # --- Publisher Configuration ---
 #
-selfpublisher: | $(SELFBUILDDIR)
+self_publisher: | $(SELF_BUILD_DIR)
 	$(eval PUBLISHER := $(SELF))
-	$(eval BUILD_DIR := $(SELFBUILDDIR))
+	$(eval BUILD_DIR := $(SELF_BUILD_DIR))
 	$(eval CHEAT_ENABLED := $(FALSE))
 
-atariagepublisher: | $(ATARIAGEBUILDDIR)
+atariage_publisher: | $(ATARIAGE_BUILD_DIR)
 	$(eval PUBLISHER := $(ATARIAGE))
-	$(eval BUILD_DIR := $(ATARIAGEBUILDDIR))
+	$(eval BUILD_DIR := $(ATARIAGE_BUILD_DIR))
 	$(eval CHEAT_ENABLED := $(FALSE))
 
-selfpublishercheat: | $(SELFDEBUGDIR)
+self_publisher_cheat: | $(SELF_DEBUG_DIR)
 	$(eval PUBLISHER := $(SELF))
-	$(eval BUILD_DIR := $(SELFDEBUGDIR))
+	$(eval BUILD_DIR := $(SELF_DEBUG_DIR))
 	$(eval CHEAT_ENABLED := $(TRUE))
 
-atariagepublishercheat: | $(ATARIAGEDEBUGDIR)
+atariage_publisher_cheat: | $(ATARIAGE_DEBUG_DIR)
 	$(eval PUBLISHER := $(ATARIAGE))
-	$(eval BUILD_DIR := $(ATARIAGEDEBUGDIR))
+	$(eval BUILD_DIR := $(ATARIAGE_DEBUG_DIR))
 	$(eval CHEAT_ENABLED := $(TRUE))
 #
 # --- Region Configuration ---
 #
-regionntsc:
+region_ntsc:
 	$(eval COMPILE_REGION := $(NTSC))
-	$(eval BUILD_NAME := $(BUILD_NAME)_NTSC)
-regionpal50:
+	$(eval BUILD_NAME := $(BUILD_NAME)_ntsc)
+region_pal50:
 	$(eval COMPILE_REGION := $(PAL50))
-	$(eval BUILD_NAME := $(BUILD_NAME)_PAL50)
-regionpal60:
+	$(eval BUILD_NAME := $(BUILD_NAME)_pal50)
+region_pal60:
 	$(eval COMPILE_REGION := $(PAL60))
-	$(eval BUILD_NAME := $(BUILD_NAME)_PAL60)
+	$(eval BUILD_NAME := $(BUILD_NAME)_pal60)
 #
 # --- Speed Configuration ---
 #
-fastspeed:
+fast_speed:
 	$(eval SPEEDUP_ENABLED := $(TRUE))
-	$(eval BUILD_NAME := $(BUILD_NAME)_FAST)
-slowspeed:
+	$(eval BUILD_NAME := $(BUILD_NAME)_fast)
+slow_speed:
 	$(eval SPEEDUP_ENABLED := $(FALSE))
-	$(eval BUILD_NAME := $(BUILD_NAME)_SLOW)
+	$(eval BUILD_NAME := $(BUILD_NAME)_slow)
 
-$(SELFBUILDDIR):
-	mkdir -p $(SELFBUILDDIR)
-$(SELFDEBUGDIR):
-	mkdir -p $(SELFDEBUGDIR)
+$(SELF_BUILD_DIR):
+	mkdir -p $(SELF_BUILD_DIR)
+$(SELF_DEBUG_DIR):
+	mkdir -p $(SELF_DEBUG_DIR)
 
-$(ATARIAGEBUILDDIR):
-	mkdir -p $(ATARIAGEBUILDDIR)
-$(ATARIAGEDEBUGDIR):
-	mkdir -p $(ATARIAGEDEBUGDIR)
+$(ATARIAGE_BUILD_DIR):
+	mkdir -p $(ATARIAGE_BUILD_DIR)
+$(ATARIAGE_DEBUG_DIR):
+	mkdir -p $(ATARIAGE_DEBUG_DIR)
