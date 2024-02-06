@@ -6,10 +6,10 @@ PROJ			:= pacman4K
 INCLUDES		:= ./includes
 ASM			:= dasm
 SOURCE_DIR		:= ./source
-SELF_BUILD_DIR		:= ./build/self
-SELF_DEBUG_DIR		:= ./debug/self
-ATARIAGE_BUILD_DIR	:= ./build/atariage
-ATARIAGE_DEBUG_DIR	:= ./debug/atariage
+SELF_BUILD_DIR		:= ./build/release/self
+SELF_DEBUG_DIR		:= ./build/debug/self
+ATARIAGE_BUILD_DIR	:= ./build/release/atariage
+ATARIAGE_DEBUG_DIR	:= ./build/debug/atariage
 BUILD_NAME		:= $(PROJ)
 
 #
@@ -69,7 +69,7 @@ build_atariage_cheat_fast_pal50: atariage_publisher_cheat fast_speed region_pal5
 build_atariage_cheat_fast_pal60: atariage_publisher_cheat fast_speed region_pal60 buildproj
 
 buildproj:
-	$(ASM) $(SOURCEDIR)/$(PROJ).$(ASMEXT) \
+	$(ASM) $(SOURCE_DIR)/$(PROJ).$(ASMEXT) \
 		$(ASMFLAGS) \
 		-DCOMPILE_REGION=$(COMPILE_REGION) \
 		-DPUBLISHER=$(PUBLISHER) \
