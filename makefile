@@ -2,15 +2,15 @@
 # Makefile for Pacman4K
 #
 
-PROJ			:= pacman4K
-INCLUDES		:= ./includes
-ASM			:= dasm
-SOURCE_DIR		:= ./source
+PROJ			    := pacman4K
+INCLUDES		    := ./includes
+ASM			  	    := dasm
+SOURCE_DIR		    := ./source
 SELF_BUILD_DIR		:= ./build/release/self
 SELF_DEBUG_DIR		:= ./build/debug/self
 ATARIAGE_BUILD_DIR	:= ./build/release/atariage
 ATARIAGE_DEBUG_DIR	:= ./build/debug/atariage
-BUILD_NAME		:= $(PROJ)
+BUILD_NAME		    := $(PROJ)
 
 #
 # --- Defines ---

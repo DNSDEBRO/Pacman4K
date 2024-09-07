@@ -15,12 +15,12 @@
 ;     Atari7800 via CuttleCartII
 ;
 ; AtariAge build stats...
-; *** 123 BYTES OF RAM USED 5 BYTES FREE
-; ***  47 BYTES OF ROM FREE
+; *** 124 BYTES OF RAM USED 4 BYTES FREE
+; ***  18 BYTES OF ROM FREE
 ;
 ; Self publish build stats...
-; *** 123 BYTES OF RAM USED 5 BYTES FREE
-; ***  49 BYTES OF ROM FREE
+; *** 124 BYTES OF RAM USED 4 BYTES FREE
+; ***  20 BYTES OF ROM FREE
 ;
 ; Pac-Man® & © of NAMCO LTD., ALL RIGHTS RESERVED.
 ; This project is not endourced by Namco in any way. This project was done by an
@@ -174,25 +174,17 @@
 ; make the selection wrap back around to 0. This was done in the
 ; .changeGameSelection routine.
 ;
+; ==============================================================================
+; Version 1.4.0 Notes
+;
+; - Modified default speed for NORMAL_SPEED
+; - Modified dot eating sounds
+; - Added faster cornering for Pac-man
+; - Code clean up
+;
    processor 6502
 
    LIST ON
-
-   include "macro.h"
-   include "tia_constants.h"
-   include "vcs.h"
-
-;
-; Make sure we are using macro.h version 1.06 or greater.
-;
-   IF VERSION_MACRO < 106
-
-      echo ""
-      echo "*** ERROR: macro.h file *must* be version 1.06 or higher!"
-      echo ""
-      err
-
-   ENDIF
 
 ;===============================================================================
 ; A S S E M B L E R - S W I T C H E S
@@ -248,8 +240,8 @@ COMPILE_REGION          = NTSC      ; change this to compile for different
  
    IFNCONST CHEAT_ENABLE
    
-CHEAT_ENABLE            = FALSE     ; set to TRUE to enable cheat 
-                                    ; (no death collisions)
+CHEAT_ENABLE            = FALSE     ; set to TRUE to enable no death collisions
+
    ENDIF
    
    IF !(CHEAT_ENABLE = TRUE || CHEAT_ENABLE = FALSE)
@@ -264,7 +256,7 @@ CHEAT_ENABLE            = FALSE     ; set to TRUE to enable cheat
    
    IFNCONST FASTER_SPEED
    
-FASTER_SPEED            = TRUE      ; set to FALSE for original speed
+FASTER_SPEED            = FALSE     ; set to FALSE for original speed
                                     ; set to TRUE for faster speed
                                     ; (~14% increase)
    ENDIF
@@ -278,7 +270,23 @@ FASTER_SPEED            = TRUE      ; set to FALSE for original speed
       err
 
    ENDIF
-   
+
+   include "macro.h"
+   include "tia_constants.h"
+   include "vcs.h"
+
+;
+; Make sure we are using macro.h version 1.06 or greater.
+;
+   IF VERSION_MACRO < 106
+
+      echo ""
+      echo "*** ERROR: macro.h file *must* be version 1.06 or higher!"
+      echo ""
+      err
+
+   ENDIF
+
 ;===============================================================================
 ; F R A M E  T I M I N G S
 ;===============================================================================
@@ -291,81 +299,15 @@ OVERSCAN_TIME           = 31        ; overscan time for 60 FPS
 ;
 ; game speed values
 ;
-   IF FASTER_SPEED
+      IF FASTER_SPEED
 
-SPEED_PACMAN_NORMAL_1   = $92       ; 4 / 7 pixels per frame
-SPEED_PACMAN_NORMAL_2   = $A6       ; 83 / 128 pixels per frame
-SPEED_PACMAN_NORMAL_3   = $B6       ; 91 / 128 pixels per frame
-SPEED_PACMAN_NORMAL_4   = $A6       ; 83 / 128 pixels per frame
+SPRITE_FULL_SPEED       = $B6       ; 91 / 128 pixels per frame
 
-SPEED_PACMAN_BLUE_1     = $A6       ; 83 / 128 pixels per frame
-SPEED_PACMAN_BLUE_2     = $AD       ; 173 / 256 pixels per frame
-SPEED_PACMAN_BLUE_3     = $B6       ; 91 / 128 pixels per frame
-SPEED_PACMAN_BLUE_4     = $A6       ; 83 / 128 pixels per frame
+      ELSE
 
-SPEED_MONSTER_NORMAL_1  = $7C       ; 31 / 64 pixels per frame
-SPEED_MONSTER_NORMAL_2  = $9E       ; 79 / 128 pixels per frame
-SPEED_MONSTER_NORMAL_3  = $AC       ; 43 / 64 pixels per frame
-SPEED_MONSTER_NORMAL_4  = $AC       ; 43 / 64 pixels per frame
+SPRITE_FULL_SPEED       = $A0       ; 5 / 8 pixels per frame
 
-SPEED_MONSTER_BLUE_1    = $60       ; 3 / 8 pixels per frame
-SPEED_MONSTER_BLUE_2    = $68       ; 13 / 32 pixels per frame
-SPEED_MONSTER_BLUE_3    = $6D       ; 109 / 256 pixels per frame
-SPEED_MONSTER_BLUE_4    = $51       ; 81 / 256 pixels per frame
-
-SPEED_MONSTER_SLOW_1    = $49       ; 73 / 256 pixels per frame
-SPEED_MONSTER_SLOW_2    = $51       ; 81 / 256 pixels per frame
-SPEED_MONSTER_SLOW_3    = $60       ; 3 / 8 pixels per frame
-SPEED_MONSTER_SLOW_4    = $60       ; 3 / 8 pixels per frame
-
-SPEED_CRUISE_ELROY1_1   = $92       ; 4 / 7 pixels per frame
-SPEED_CRUISE_ELROY1_2   = $A6       ; 83 / 128 pixels per frame
-SPEED_CRUISE_ELROY1_3   = $B6       ; 91 / 128 pixels per frame
-SPEED_CRUISE_ELROY1_4   = $B6       ; 91 / 128 pixels per frame
-
-SPEED_CRUISE_ELROY2_1   = $9E       ; 79 / 128 pixels per frame
-SPEED_CRUISE_ELROY2_2   = $AC       ; 43 / 64 pixels per frame
-SPEED_CRUISE_ELROY2_3   = $C0       ; 3 / 4 pixels per frame
-SPEED_CRUISE_ELROY2_4   = $C0       ; 3 / 4 pixels per frame
-
-   ELSE
-
-SPEED_PACMAN_NORMAL_1   = $80       ; 1 / 2 pixels per frame
-SPEED_PACMAN_NORMAL_2   = $92       ; 4 / 7 pixels per frame
-SPEED_PACMAN_NORMAL_3   = $A0       ; 5 / 8 pixels per frame
-SPEED_PACMAN_NORMAL_4   = $92       ; 4 / 7 pixels per frame
-
-SPEED_PACMAN_BLUE_1     = $92       ; 4 / 7 pixels per frame
-SPEED_PACMAN_BLUE_2     = $98       ; 19 / 32 pixels per frame
-SPEED_PACMAN_BLUE_3     = $A0       ; 5 / 8 pixels per frame
-SPEED_PACMAN_BLUE_4     = $92       ; 4 / 7 pixels per frame
-
-SPEED_MONSTER_NORMAL_1  = $6D       ; 3 / 7 pixels per frame
-SPEED_MONSTER_NORMAL_2  = $8B       ; 6 / 11 pixels per frame
-SPEED_MONSTER_NORMAL_3  = $98       ; 3 / 5 pixels per frame
-SPEED_MONSTER_NORMAL_4  = $98       ; 3 / 5 pixels per frame
-
-SPEED_MONSTER_BLUE_1    = $55       ; 1 / 3 pixels per frame
-SPEED_MONSTER_BLUE_2    = $5C       ; 9 / 25 pixels per frame
-SPEED_MONSTER_BLUE_3    = $60       ; 3 / 8 pixels per frame
-SPEED_MONSTER_BLUE_4    = $48       ; 9 / 32 pixels per frame
-
-SPEED_MONSTER_SLOW_1    = $40       ; 1 / 4 pixels per frame
-SPEED_MONSTER_SLOW_2    = $48       ; 9 / 32 pixels per frame
-SPEED_MONSTER_SLOW_3    = $55       ; 1 / 3 pixels per frame
-SPEED_MONSTER_SLOW_4    = $55       ; 1 / 3 pixels per frame
-
-SPEED_CRUISE_ELROY1_1   = $80       ; 1 / 2 pixels per frame
-SPEED_CRUISE_ELROY1_2   = $92       ; 4 / 7 pixels per frame
-SPEED_CRUISE_ELROY1_3   = $A0       ; 5 / 8 pixels per frame
-SPEED_CRUISE_ELROY1_4   = $A0       ; 5 / 8 pixels per frame
-
-SPEED_CRUISE_ELROY2_1   = $8B       ; 6 / 11 pixels per frame
-SPEED_CRUISE_ELROY2_2   = $98       ; 3 / 5 pixels per frame
-SPEED_CRUISE_ELROY2_3   = $AA       ; 2 / 3 pixels per frame
-SPEED_CRUISE_ELROY2_4   = $AA       ; 2 / 3 pixels per frame
-
-   ENDIF                            ; NTSC and PAL60 game speed values
+      ENDIF
 
    ELSE
 
@@ -375,89 +317,59 @@ OVERSCAN_TIME           = 69        ; overscan time for 50 FPS
 ;
 ; game speed values
 ;
-   IF FASTER_SPEED
+      IF FASTER_SPEED
 
-SPEED_PACMAN_NORMAL_1   = $AF       ; 4 / 7 pixels per frame
-SPEED_PACMAN_NORMAL_2   = $C7       ; 83 / 128 pixels per frame
-SPEED_PACMAN_NORMAL_3   = $DA       ; 91 / 128 pixels per frame
-SPEED_PACMAN_NORMAL_4   = $C7       ; 83 / 128 pixels per frame
+SPRITE_FULL_SPEED       = $DA       ; 91 / 128 pixels per frame
 
-SPEED_PACMAN_BLUE_1     = $C7       ; 83 / 128 pixels per frame
-SPEED_PACMAN_BLUE_2     = $CF       ; 173 / 256 pixels per frame
-SPEED_PACMAN_BLUE_3     = $DA       ; 91 / 128 pixels per frame
-SPEED_PACMAN_BLUE_4     = $C7       ; 83 / 128 pixels per frame
+      ELSE
 
-SPEED_MONSTER_NORMAL_1  = $94       ; 31 / 64 pixels per frame
-SPEED_MONSTER_NORMAL_2  = $BD       ; 79 / 128 pixels per frame
-SPEED_MONSTER_NORMAL_3  = $CE       ; 43 / 64 pixels per frame
-SPEED_MONSTER_NORMAL_4  = $CE       ; 43 / 64 pixels per frame
+SPRITE_FULL_SPEED       = $C0       ; 5 / 8 pixels per frame
 
-SPEED_MONSTER_BLUE_1    = $73       ; 3 / 8 pixels per frame
-SPEED_MONSTER_BLUE_2    = $7C       ; 13 / 32 pixels per frame
-SPEED_MONSTER_BLUE_3    = $82       ; 3 / 7 pixels per frame
-SPEED_MONSTER_BLUE_4    = $61       ; 81 / 256 pixels per frame
+      ENDIF
 
-SPEED_MONSTER_SLOW_1    = $57       ; 73 / 256 pixels per frame
-SPEED_MONSTER_SLOW_2    = $61       ; 81 / 256 pixels per frame
-SPEED_MONSTER_SLOW_3    = $73       ; 3 / 8 pixels per frame
-SPEED_MONSTER_SLOW_4    = $73       ; 3 / 8 pixels per frame
-
-SPEED_CRUISE_ELROY1_1   = $AF       ; 4 / 7 pixels per frame
-SPEED_CRUISE_ELROY1_2   = $C7       ; 83 / 128 pixels per frame
-SPEED_CRUISE_ELROY1_3   = $DA       ; 91 / 128 pixels per frame
-SPEED_CRUISE_ELROY1_4   = $DA       ; 91 / 128 pixels per frame
-
-SPEED_CRUISE_ELROY2_1   = $BD       ; 79 / 128 pixels per frame
-SPEED_CRUISE_ELROY2_2   = $DA       ; 91 / 128 pixels per frame
-SPEED_CRUISE_ELROY2_3   = $E6       ; 3 / 4 pixels per frame
-SPEED_CRUISE_ELROY2_4   = $E6       ; 3 / 4 pixels per frame
-
-   ELSE
-
-SPEED_PACMAN_NORMAL_1   = $99       ; 1 / 2 pixels per frame
-SPEED_PACMAN_NORMAL_2   = $AF       ; 4 / 7 pixels per frame
-SPEED_PACMAN_NORMAL_3   = $C0       ; 5 / 8 pixels per frame
-SPEED_PACMAN_NORMAL_4   = $AF       ; 4 / 7 pixels per frame
-
-SPEED_PACMAN_BLUE_1     = $AF       ; 4 / 7 pixels per frame
-SPEED_PACMAN_BLUE_2     = $B6       ; 19 / 32 pixels per frame
-SPEED_PACMAN_BLUE_3     = $C0       ; 5 / 8 pixels per frame
-SPEED_PACMAN_BLUE_4     = $AF       ; 4 / 7 pixels per frame
-
-SPEED_MONSTER_NORMAL_1  = $82       ; 3 / 7 pixels per frame
-SPEED_MONSTER_NORMAL_2  = $A6       ; 6 / 11 pixels per frame
-SPEED_MONSTER_NORMAL_3  = $B6       ; 19 / 32 pixels per frame
-SPEED_MONSTER_NORMAL_4  = $B6       ; 19 / 32 pixels per frame
-
-SPEED_MONSTER_BLUE_1    = $66       ; 1 / 3 pixels per frame
-SPEED_MONSTER_BLUE_2    = $6E       ; 9 / 25 pixels per frame
-SPEED_MONSTER_BLUE_3    = $73       ; 3 / 8 pixels per frame
-SPEED_MONSTER_BLUE_4    = $56       ; 9 / 32 pixels per frame
-
-SPEED_MONSTER_SLOW_1    = $4C       ; 1 / 4 pixels per frame
-SPEED_MONSTER_SLOW_2    = $56       ; 9 / 32 pixels per frame
-SPEED_MONSTER_SLOW_3    = $66       ; 1 / 3 pixels per frame
-SPEED_MONSTER_SLOW_4    = $66       ; 1 / 3 pixels per frame
-
-SPEED_CRUISE_ELROY1_1   = $99       ; 1 / 2 pixels per frame
-SPEED_CRUISE_ELROY1_2   = $AF       ; 4 / 7 pixels per frame
-SPEED_CRUISE_ELROY1_3   = $C0       ; 5 / 8 pixels per frame
-SPEED_CRUISE_ELROY1_4   = $C0       ; 5 / 8 pixels per frame
-
-SPEED_CRUISE_ELROY2_1   = $A6       ; 6 / 11 pixels per frame
-SPEED_CRUISE_ELROY2_2   = $B6       ; 19 / 32 pixels per frame
-SPEED_CRUISE_ELROY2_3   = $CC       ; 2 / 3 pixels per frame
-SPEED_CRUISE_ELROY2_4   = $CC       ; 2 / 3 pixels per frame
-
-   ENDIF                            ; PAL50 game speed values
    ENDIF                            ; frame timings
+
+SPEED_PACMAN_NORMAL_00  = [SPRITE_FULL_SPEED *  8] / 10  ; 80%
+SPEED_PACMAN_NORMAL_01  = [SPRITE_FULL_SPEED *  9] / 10  ; 90%
+SPEED_PACMAN_NORMAL_02  = SPRITE_FULL_SPEED              ;100%
+SPEED_PACMAN_NORMAL_03  = [SPRITE_FULL_SPEED *  9] / 10  ; 90%
+
+SPEED_PACMAN_BLUE_00    = [SPRITE_FULL_SPEED *  9] / 10  ; 90%
+SPEED_PACMAN_BLUE_01    = [SPRITE_FULL_SPEED * 19] / 20  ; 95%
+SPEED_PACMAN_BLUE_02    = SPRITE_FULL_SPEED              ;100%
+SPEED_PACMAN_BLUE_03    = [SPRITE_FULL_SPEED *  9] / 10  ; 90%
+
+SPEED_MONSTER_NORMAL_00 = [SPRITE_FULL_SPEED *  3] /  4  ; 75%
+SPEED_MONSTER_NORMAL_01 = [SPRITE_FULL_SPEED * 17] / 20  ; 85%
+SPEED_MONSTER_NORMAL_02 = [SPRITE_FULL_SPEED * 19] / 20  ; 95%
+SPEED_MONSTER_NORMAL_03 = [SPRITE_FULL_SPEED * 19] / 20  ; 95%
+
+SPEED_MONSTER_BLUE_00   = [SPRITE_FULL_SPEED]      / 2   ; 50%
+SPEED_MONSTER_BLUE_01   = [SPRITE_FULL_SPEED * 11] / 20  ; 55%
+SPEED_MONSTER_BLUE_02   = [SPRITE_FULL_SPEED *  3] /  5  ; 60%
+SPEED_MONSTER_BLUE_03   = [SPRITE_FULL_SPEED *  3] /  5  ; 60%
+
+SPEED_MONSTER_SLOW_00   = [SPRITE_FULL_SPEED *  2] /  5  ; 40%
+SPEED_MONSTER_SLOW_01   = [SPRITE_FULL_SPEED *  9] / 20  ; 45%
+SPEED_MONSTER_SLOW_02   = [SPRITE_FULL_SPEED]      /  2  ; 50%
+SPEED_MONSTER_SLOW_03   = [SPRITE_FULL_SPEED]      /  2  ; 50%
+
+SPEED_CRUISE_ELROY1_00  = [SPRITE_FULL_SPEED *  8] / 10  ; 80%
+SPEED_CRUISE_ELROY1_01  = [SPRITE_FULL_SPEED *  9] / 10  ; 90%
+SPEED_CRUISE_ELROY1_02  = SPRITE_FULL_SPEED              ;100%
+SPEED_CRUISE_ELROY1_03  = SPRITE_FULL_SPEED              ;100%
+
+SPEED_CRUISE_ELROY2_00  = [SPRITE_FULL_SPEED * 17] / 20  ; 85%
+SPEED_CRUISE_ELROY2_01  = [SPRITE_FULL_SPEED * 19] / 20  ; 95%
+SPEED_CRUISE_ELROY2_02  = [SPRITE_FULL_SPEED * 21] / 20  ;105%
+SPEED_CRUISE_ELROY2_03  = [SPRITE_FULL_SPEED * 21] / 20  ;105%
 
 ;===============================================================================
 ; C O L O R  C O N S T A N T S
 ;===============================================================================
 
-BLACK                   = $00       ; RGB = 000000
-WHITE                   = $0E       ; RGB = ECECEC
+BLACK                   = $00
+WHITE                   = $0E
 DOT_COLOR               = WHITE
 EYE_COLOR               = WHITE
 MUSH_COLOR              = YELLOW + 10
@@ -466,7 +378,6 @@ MAZE_COLOR              = DK_BLUE + 4
 CHERRIES_COLOR          = RED + 4
 STRAWBERRY_COLOR        = RED + 4
 APPLE_COLOR             = RED + 2
-
 BLINKY_COLOR            = RED + 6
 
    IF COMPILE_REGION = NTSC
@@ -475,7 +386,7 @@ PEACH_COLOR             = RED_ORANGE + 12
 PINKY_COLOR             = PURPLE + 10
 INKY_COLOR              = OLIVE_GREEN + 10
 CLYDE_COLOR             = RED_ORANGE + 8
-BLUE_MONSTER_COLOR      = CYAN + 4
+BLUE_MONSTER_COLOR      = CYAN + 6
 KEY_COLOR               = CYAN + 12
 GRAPES_COLOR            = GREEN + 6
 BROWN_COLOR             = RED_ORANGE + 8
@@ -487,7 +398,7 @@ PEACH_COLOR             = BRICK_RED + 10
 PINKY_COLOR             = RED + 10
 INKY_COLOR              = DK_GREEN + 10
 CLYDE_COLOR             = YELLOW + 4
-BLUE_MONSTER_COLOR      = BLUE_2 + 4
+BLUE_MONSTER_COLOR      = BLUE_2 + 6
 KEY_COLOR               = BLUE_2 + 12
 GRAPES_COLOR            = DK_GREEN + 6
 BROWN_COLOR             = YELLOW + 4
@@ -501,7 +412,7 @@ FLAGSHIP_COLOR          = LTBLUE_COLOR
 
    ELSE
 
-FLAGSHIP_COLOR          = YELLOW
+FLAGSHIP_COLOR          = YELLOW + 10
 
    ENDIF
 
@@ -566,10 +477,10 @@ ID_PACMAN               = 5
 
 ; object starting positions
 PACMAN_START_Y          = 44
-PACMAN_START_X          = 87 - 8
+PACMAN_START_X          = 79
 
 BLINKY_START_Y          = 108
-BLINKY_START_X          = 87 - 8
+BLINKY_START_X          = 79
 
 PINKY_START_Y           = BLINKY_START_Y - 16
 PINKY_START_X           = BLINKY_START_X + 1
@@ -593,12 +504,16 @@ SE_ENERGIZER_RAM_PTR    = SW_ENERGIZER_RAM_PTR + 20
 ;
 DOT_SCORE               = $0010
 ENERGIZER_SCORE         = $0050
+;
 ; monster score values
+;
 FIRST_MONSTER_VALUE     = $0200
 SECOND_MONSTER_VALUE    = $0400
 THIRD_MONSTER_VALUE     = $0800
 FOURTH_MONSTER_VALUE    = $1600
+;
 ; fruit score values
+;
 CHERRIES_SCORE          = $0100
 STRAWBERRY_SCORE        = $0300
 PEACH_SCORE             = $0500
@@ -610,17 +525,25 @@ KEY_SCORE               = $5000
 
 STARTING_NUM_LIVES      = 2
 
-CHAMBER_TARGET_IDX      = 4
+   IF FASTER_SPEED
 
+FRUIT_TIMER_VALUE       = 7
+
+   ELSE
+
+FRUIT_TIMER_VALUE       = 8
+
+   ENDIF
+
+CHAMBER_TARGET_IDX      = 4
 CHAMBER_HOME_HORIZ      = 87
 CHAMBER_HOME_VERT       = 108
-
-ATTACK_TIMER_VALUE      = 25
-
+;
 ; home position constants
-BLINKY_HOME_HORIZ       = 153 - 8
-PINKY_HOME_HORIZ        = 22 - 8
-INKY_HOME_HORIZ         = 152 - 8
+;
+BLINKY_HOME_HORIZ       = 145
+PINKY_HOME_HORIZ        = 14
+INKY_HOME_HORIZ         = BLINKY_HOME_HORIZ
 CLYDE_HOME_HORIZ        = PINKY_HOME_HORIZ
 
 BLINKY_HOME_VERT        = (SIZE_TILE * 4) + H_KERNEL
@@ -641,8 +564,9 @@ KEY_LEVEL               = 12
 MAX_BLUE_TIME_LEVEL     = 18
 
 INIT_PACMAN_ATE_BONUS_INDEX = 15
-
-;motion constants
+;
+; motion constants
+;
 MY_MOVE_RIGHT           = %10000000
 MY_MOVE_LEFT            = %01000000
 MY_MOVE_DOWN            = %00100000
@@ -653,49 +577,56 @@ HORIZ_MOTION            = MY_MOVE_LEFT  | MY_MOVE_RIGHT
 
 ALLOW_MOVE_HORIZ        = MY_MOVE_RIGHT | MY_MOVE_LEFT
 ALLOW_MOVE_VERT         = MY_MOVE_UP    | MY_MOVE_DOWN
-
+;
 ; direction index constants
+;
 DIRECTION_UP            = %00
 DIRECTION_RIGHT         = %01
 DIRECTION_DOWN          = %10
 DIRECTION_LEFT          = %11
-
+;
 ; player state values
+;
 DEATH_SEQUENCE          = %10000000
 START_GAME_MUSIC        = %01000000
-FRUIT_TIMER             = %00000111
 LIVES_MASK              = %00000011
-
+;
 ; energizer mask values
+;
 NE_ENERGIZER_MASK_VALUE = %00100000
 NW_ENERGIZER_MASK_VALUE = %00010000
 SW_ENERGIZER_MASK_VALUE = %00001000
 SE_ENERGIZER_MASK_VALUE = %00000100
-
-; pacman attribute values
+;
+; Pac-man attribute values
+;
 PACMAN_DELAY_MASK       = %10000000
 ENERGIZER_VALUE_MASK    = %00111100
 PACMAN_DIRECTION_MASK   = %00000011
-
+;
 ; monster attribute values
+;
 BLUE_STATE              = %10000000
 EYE_STATE               = %01000000
 RELEASE_TIME            = %00111100
 MONSTER_DIRECTION_MASK  = %00000011
-
+;
 ; game state values
+;
 NEW_LEVEL_PAUSE         = %10000000
 RETURN_HOME             = %01000000
 NEW_LEVEL               = %00100000
 LEVEL_SELECTION_MASK    = %00000111
-
+;
 ; score values
+;
 EXTRA_LIFE_REWARDED     = %00000001
 FRUIT_SHOWN_MASK        = %00000110
 FIRST_FRUIT_SHOWN       = %00000010
 SECOND_FRUIT_SHOWN      = %00000100
-
+;
 ; game board state values
+;
 GAME_BOARD_DONE         = %10000000
 DEMO_MODE               = %01000000
 CRUISE_ELROY1_STATE     = %00010000 ; only valid for Blinky
@@ -703,8 +634,10 @@ CRUISE_ELROY2_STATE     = %00100000 ; only valid for Blinky
 CRUISE_ELROY_STATE      = CRUISE_ELROY1_STATE | CRUISE_ELROY2_STATE
 FRUIT_SHOW              = %00001000
 MONSTER_EATEN_MASK      = %00000111
-
+;
 ; attack timer values
+;
+ATTACK_TIMER_VALUE      = 25
 ATTACK_COUNTER_MASK     = %11100000
 ATTACK_TIMER            = %00011111
 
@@ -744,24 +677,36 @@ ATTACK_TIMER            = %00011111
       REPEND
   ENDM
 
+;-------------------------------------------------------
+; FILL_BOUNDARY byte#
+; Original author: Dennis Debro (borrowed from Bob Smith / Thomas Jentzsch)
 ;
-; boundary macro
+; Push data to a certain position inside a page and keep count of how
+; many free bytes the programmer will have.
 ;
-; This is used to push data to certain areas of the ROM. It fills the unused 
-; bytes with zeros. It also tracks the number of ROM bytes available by using
-; FREE_BYTES.
-;
+; eg: FILL_BOUNDARY 5, 234    ; position at byte #5 in page with $EA is byte filler
 FREE_BYTES SET 0
-   MAC BOUNDRY
+.BYTES_TO_SKIP SET 0
 
-      REPEAT 256
-         IF (<. % {1} = 0) || (<. > {1})
-            MEXIT
-         ELSE
+   MAC FILL_BOUNDARY
+      IF <. > {1}
+
+.BYTES_TO_SKIP SET 0
+
+      ELSE
+
+.BYTES_TO_SKIP SET (256 - <.) - (256 - {1})
+
+      ENDIF
+
+      REPEAT .BYTES_TO_SKIP
+
 FREE_BYTES SET FREE_BYTES + 1
-            .byte $00
-         ENDIF
-      REPEND
+
+     .byte {2}
+
+     REPEND
+
    ENDM
 
 ;
@@ -783,192 +728,193 @@ FREE_BYTES SET FREE_BYTES + 1
 ; Locations $80 - $FF are available for RAM use.
 ;
 
-mazeDots             ds NUM_RAM_DOT_BYTES
-frameSecondCount     ds 1           ; temporarily holds clock seconds value
+mazeDots                ds NUM_RAM_DOT_BYTES
+frameSecondCount        ds 1        ; temporarily holds clock seconds value
 
    .org frameSecondCount
 
-object1GraphicPtr    ds 2           ; indirect pointer to object 1 graphic data
-selectDebounce       ds 1           ; could use 1 bit but using a byte reduces ROM
-objectMotionDelays   ds NUM_MONSTERS + 1; fractional delay values for monsters
+object1GraphicPtr       ds 2        ; indirect pointer to object 1 graphic data
+selectDebounce          ds 1        ; could use 1 bit but using a byte reduces ROM
+objectMotionDelays      ds NUM_MONSTERS + 1; fractional delay values for monsters
 ;--------------------------------------
-blinkyMotionDelay    = objectMotionDelays
-pinkyMotionDelay     = blinkyMotionDelay + 1
-inkyMotionDelay      = pinkyMotionDelay + 1
-clydeMotionDelay     = inkyMotionDelay + 1
-pacmanMotionDelay    = clydeMotionDelay + 1
-fontHeight           ds 1           ; used by 6 digit kernel (i.e. score display)
+blinkyMotionDelay       = objectMotionDelays
+pinkyMotionDelay        = blinkyMotionDelay + 1
+inkyMotionDelay         = pinkyMotionDelay + 1
+clydeMotionDelay        = inkyMotionDelay + 1
+pacmanMotionDelay       = clydeMotionDelay + 1
+fontHeight              ds 1        ; used by 6 digit kernel (i.e. score display)
 ;--------------------------------------
-object1Sprite        = fontHeight   ; used in kernel to hold GRP1 graphics data
+object1Sprite           = fontHeight; used in kernel to hold GRP1 graphics data
 ;--------------------------------------
-blinkEnergizerOnValue = object1Sprite; holds value for blinking energizers (temporary)
+blinkEnergizerOnValue   = object1Sprite; holds value for blinking energizers (temporary)
 ;--------------------------------------
-monsterAnimationFrame = blinkEnergizerOnValue
-digitHundredthsGraphic ds 1         ; graphic holder for 6-digit display
+monsterAnimationFrame   = blinkEnergizerOnValue
+digitHundredthsGraphic  ds 1        ; graphic holder for 6-digit display
 ;--------------------------------------
-tempSection          = digitHundredthsGraphic
+tempSection             = digitHundredthsGraphic
 ;--------------------------------------
-multi5               = tempSection
+multi5                  = tempSection
 ;--------------------------------------
-allowedMotion        = multi5
+allowedMotion           = multi5
 ;--------------------------------------
-tempEnergizerValues  = allowedMotion
+tempEnergizerValues     = allowedMotion
 
-deathSoundFreq       ds 1
-objectLSBValues      ds 6
+deathSoundFreq          ds 1
+objectLSBValues         ds 6
 ;--------------------------------------
-object0LSBValues     = objectLSBValues
+object0LSBValues        = objectLSBValues
 ;--------------------------------------
-objectGraphicLSB     = object0LSBValues
+objectGraphicLSB        = object0LSBValues
 ;--------------------------------------
-blinkyLSBValue       = object0LSBValues
+blinkyLSBValue          = object0LSBValues
 ;--------------------------------------
-blinkyGraphicLSB     = blinkyLSBValue
-pinkyLSBValue        = blinkyLSBValue + 1
+blinkyGraphicLSB        = blinkyLSBValue
+pinkyLSBValue           = blinkyLSBValue + 1
 ;--------------------------------------
-pinkyGraphicLSB      = pinkyLSBValue
-inkyLSBValue         = pinkyLSBValue + 1
+pinkyGraphicLSB         = pinkyLSBValue
+inkyLSBValue            = pinkyLSBValue + 1
 ;--------------------------------------
-inkyGraphicLSB       = inkyLSBValue
-object1LSBValues     = inkyLSBValue + 1
+inkyGraphicLSB          = inkyLSBValue
+object1LSBValues        = inkyLSBValue + 1
 ;--------------------------------------
-object1GraphicLSB    = object1LSBValues
+object1GraphicLSB       = object1LSBValues
 ;--------------------------------------
-clydeLSBValue        = object1LSBValues
+clydeLSBValue           = object1LSBValues
 ;--------------------------------------
-clydeGraphicLSB      = clydeLSBValue
-fruitLSBValue        = clydeLSBValue + 1
+clydeGraphicLSB         = clydeLSBValue
+fruitLSBValue           = clydeLSBValue + 1
 ;--------------------------------------
-fruitGraphicLSB      = fruitLSBValue
-pacmanLSBValue       = fruitLSBValue + 1
-pacmanGraphicLSB     ds 1
-objectColors         ds 6
-object0Colors        = objectColors
+fruitGraphicLSB         = fruitLSBValue
+pacmanLSBValue          = fruitLSBValue + 1
+pacmanGraphicLSB        ds 1
+objectColors            ds 6
+object0Colors           = objectColors
 ;--------------------------------------
-blinkyColor          = object0Colors
-pinkyColor           = blinkyColor + 1
-inkyColor            = pinkyColor + 1
-object1Colors        = inkyColor + 1
+blinkyColor             = object0Colors
+pinkyColor              = blinkyColor + 1
+inkyColor               = pinkyColor + 1
+object1Colors           = inkyColor + 1
 ;--------------------------------------
-clydeColor           = object1Colors
-fruitColor           = clydeColor + 1
-pacmanColor          = fruitColor + 1
-eatenMonsterNumber   ds 1
-energizerValues      ds 1           ; energizer timer
-attackTimer          ds 1           ; timer for monster attack/retreat mode
+clydeColor              = object1Colors
+fruitColor              = clydeColor + 1
+pacmanColor             = fruitColor + 1
+eatenMonsterNumber      ds 1
+energizerValues         ds 1        ; energizer timer
+attackTimer             ds 1        ; timer for monster attack/retreat mode
 ;--------------------------------------
-pacmanDeathDelay     = attackTimer
-frameCount           ds 1           ; frame counter (updated each frame)
-fruitTimer           ds 1           ; using a byte of RAM saves ~15 bytes of ROM
-objectHorizPos       ds MAX_NUM_OBJ + 1; horizontal positions of all objects
+pacmanDeathDelay        = attackTimer
+frameCount              ds 1        ; frame counter (updated each frame)
+fruitTimer              ds 1        ; using a byte of RAM saves ~15 bytes of ROM
+dotEatingTimer          ds 1
+objectHorizPos          ds MAX_NUM_OBJ + 1; horizontal positions of all objects
 ;--------------------------------------
-object0HorizPos      = objectHorizPos
-monsterHorizPos      = object0HorizPos
+object0HorizPos         = objectHorizPos
+monsterHorizPos         = object0HorizPos
 ;--------------------------------------
-blinkyHorizPos       = monsterHorizPos
-pinkyHorizPos        = blinkyHorizPos + 1
-inkyHorizPos         = pinkyHorizPos + 1
-object1HorizPos      = inkyHorizPos + 1
+blinkyHorizPos          = monsterHorizPos
+pinkyHorizPos           = blinkyHorizPos + 1
+inkyHorizPos            = pinkyHorizPos + 1
+object1HorizPos         = inkyHorizPos + 1
 ;--------------------------------------
-clydeHorizPos        = object1HorizPos
-fruitHorizPos        = clydeHorizPos + 1
-pacmanHorizPos       = fruitHorizPos + 1
-objectVertPos        ds MAX_NUM_OBJ + 1; vertical positions of all objects
+clydeHorizPos           = object1HorizPos
+fruitHorizPos           = clydeHorizPos + 1
+pacmanHorizPos          = fruitHorizPos + 1
+objectVertPos           ds MAX_NUM_OBJ + 1; vertical positions of all objects
 ;--------------------------------------
-object0VertPos       = objectVertPos
-monsterVertPos       = object0VertPos
+object0VertPos          = objectVertPos
+monsterVertPos          = object0VertPos
 ;--------------------------------------
-blinkyVertPos        = monsterVertPos
-pinkyVertPos         = blinkyVertPos + 1
-inkyVertPos          = pinkyVertPos + 1
-object1VertPos       = inkyVertPos + 1
+blinkyVertPos           = monsterVertPos
+pinkyVertPos            = blinkyVertPos + 1
+inkyVertPos             = pinkyVertPos + 1
+object1VertPos          = inkyVertPos + 1
 ;--------------------------------------
-clydeVertPos         = object1VertPos
-fruitVertPos         = clydeVertPos + 1
-pacmanVertPos        = fruitVertPos + 1
-monsterAttributes    ds NUM_MONSTERS; berrrrdd
+clydeVertPos            = object1VertPos
+fruitVertPos            = clydeVertPos + 1
+pacmanVertPos           = fruitVertPos + 1
+monsterAttributes       ds NUM_MONSTERS; berrrrdd
                                     ; b = blue
                                     ; e = eyes
                                     ; r = release time
                                     ; d = direction
 ;--------------------------------------
-blinkyAttributes     = monsterAttributes
-pinkyAttributes      = blinkyAttributes + 1
-inkyAttributes       = pinkyAttributes + 1
-clydeAttributes      = inkyAttributes + 1
-deathSoundIndex      ds 1
+blinkyAttributes        = monsterAttributes
+pinkyAttributes         = blinkyAttributes + 1
+inkyAttributes          = pinkyAttributes + 1
+clydeAttributes         = inkyAttributes + 1
+deathSoundIndex         ds 1
 ;--------------------------------------
 eatingMonsterSoundIndex = deathSoundIndex
 ;--------------------------------------
-levelPauseTimer      = eatingMonsterSoundIndex
-pacmanAttributes     ds 1           ; Dxppppdd
+levelPauseTimer         = eatingMonsterSoundIndex
+pacmanAttributes        ds 1        ; Dxppppdd
                                     ; D = frame delay
                                     ; p = energizer values...for blinking
                                     ; d = desired direction
-pacmanAteFruit       ds 1           ; could use 1 bit but using a byte reduces ROM
-dotsRemaining        ds 1
-playerState          ds 1           ; dsxfffll
+pacmanAteFruit          ds 1        ; could use 1 bit but using a byte reduces ROM
+dotsRemaining           ds 1
+playerState             ds 1        ; dsxfffll
                                     ; d = death
                                     ; s = start game music
                                     ; f = fruit timer
                                     ; l = lives
-score                ds 3           ; 2.5 bytes used for score (i.e. 1 nybble free)
-gameBoardState       ds 1           ; dDccfggg
+score                   ds 3        ; 2.5 bytes used for score (i.e. 1 nybble free)
+gameBoardState          ds 1        ; dDccfggg
                                     ; d = game board done...flash game board
                                     ; D = demo mode
                                     ; c = Cruise Elroy state
                                     ; f = fruit shown
                                     ; g = monsters eaten - can't go over 4
-random               ds 1
-gameLevel            ds 1           ; current game level (wraps at 256)
-gameState            ds 1           ; Srnxxsss
+random                  ds 1
+gameLevel               ds 1        ; current game level (wraps at 256)
+gameState               ds 1        ; Srnxxsss
                                     ; S = new level pause
                                     ; r = return home
                                     ; n = new level start
                                     ; s = selected level
-motionDelayIndex     ds 1
-extraPlayerSoundIndex ds 1          ; 1up sound index
-maxDistance          ds 1           ; temporarily used to determining monster direction
+motionDelayIndex        ds 1
+extraPlayerSoundIndex   ds 1        ; 1up sound index
+maxDistance             ds 1        ; temporarily used to determining monster direction
 
    .org maxDistance
 
-objectOffsetValues   ds 6
+objectOffsetValues      ds 6
 ;--------------------------------------
-object0OffsetValues  = objectOffsetValues
+object0OffsetValues     = objectOffsetValues
 ;--------------------------------------
-blinkyOffsetValue    = object0OffsetValues
-pinkyOffsetValue     = blinkyOffsetValue + 1
-inkyOffsetValue      = pinkyOffsetValue + 1
-object1OffsetValues  = inkyOffsetValue + 1
+blinkyOffsetValue       = object0OffsetValues
+pinkyOffsetValue        = blinkyOffsetValue + 1
+inkyOffsetValue         = pinkyOffsetValue + 1
+object1OffsetValues     = inkyOffsetValue + 1
 ;--------------------------------------
-clydeOffsetValue     = object1OffsetValues
+clydeOffsetValue        = object1OffsetValues
 ;--------------------------------------
-targetVertPos        = clydeOffsetValue
-fruitOffsetValue     = clydeOffsetValue + 1
+targetVertPos           = clydeOffsetValue
+fruitOffsetValue        = clydeOffsetValue + 1
 ;--------------------------------------
-tempMonsterAttribute = fruitOffsetValue
-pacmanOffsetValue    = fruitOffsetValue + 1
+tempMonsterAttribute    = fruitOffsetValue
+pacmanOffsetValue       = fruitOffsetValue + 1
 ;--------------------------------------
-targetHorizPos       = pacmanOffsetValue
+targetHorizPos          = pacmanOffsetValue
 ;--------------------------------------
-diagMotionMask       = targetHorizPos
-objectMSBValues      ds 6
+joystickDirectionMask   = targetHorizPos
+objectMSBValues         ds 6
 ;--------------------------------------
-object0MSBValues     = objectMSBValues
+object0MSBValues        = objectMSBValues
 ;--------------------------------------
-blinkyMSBValue       = object0MSBValues
-pinkyMSBValue        = blinkyMSBValue + 1
-inkyMSBValue         = pinkyMSBValue + 1
-object1MSBValues     = inkyMSBValue + 1
+blinkyMSBValue          = object0MSBValues
+pinkyMSBValue           = blinkyMSBValue + 1
+inkyMSBValue            = pinkyMSBValue + 1
+object1MSBValues        = inkyMSBValue + 1
 ;--------------------------------------
-clydeMSBValue        = object1MSBValues
-fruitMSBValue        = clydeMSBValue + 1
-pacmanMSBValue       = fruitMSBValue + 1
-objectId             ds 1           ; id of current object...for kernel
-graphicPointers      ds 10
-mazeColor            ds 1
+clydeMSBValue           = object1MSBValues
+fruitMSBValue           = clydeMSBValue + 1
+pacmanMSBValue          = fruitMSBValue + 1
+objectId                ds 1        ; id of current object...for kernel
+graphicPointers         ds 10
+mazeColor               ds 1
 ;--------------------------------------
-horizontalDelta      = mazeColor    ; used in monster AI to determine direction
+horizontalDelta         = mazeColor ; used in monster AI to determine direction
 ;--------------------------------------
 clydePacmanVertDistance = horizontalDelta
 
@@ -976,16 +922,16 @@ clydePacmanVertDistance = horizontalDelta
 
    .org graphicPointers
 
-objectGraphicPtr     ds 2           ; indirect pointer to object graphic data
+objectGraphicPtr        ds 2        ; indirect pointer to object graphic data
 ;--------------------------------------
-fruitColorPointer    = objectGraphicPtr
-fruitGraphicPointer  ds 2
+fruitColorPointer       = objectGraphicPtr
+fruitGraphicPointer     ds 2
 
    .org fruitGraphicPointer
 
-objectOffset         ds 1
-object1Offset        ds 1
-kernelSection        ds 1
+objectOffset            ds 1
+object1Offset           ds 1
+kernelSection           ds 1
 
 ;===============================================================================
 ; R O M - C O D E (BANK0)
@@ -1009,7 +955,7 @@ MazeData
 ; Special thanks to Kurt Howe (Nukey Shay) for convincing me to merge these 
 ; tables for the tune data. I'm not too good in the TIA sound department.
 ;
-MazePF0Data_d
+MazePF0Data_03
 GameStartTuneTable
    .byte $C0 |  0 ;|XX......|
    .byte $20 | 29 ;|..X.....|
@@ -1029,7 +975,7 @@ GameStartTuneTable
 ;
 ; last 6 bytes shared with next table so don't cross page boundaries
 ;
-MazePF0Data_c
+MazePF0Data_02
    .byte $20 | 22 ;|..X.....|
    .byte $20 |  0 ;|..X.....|
    .byte $20 | 29 ;|..X.....|
@@ -1051,7 +997,7 @@ MazePF0Data_c
 ;
 ; last 3 bytes  shared with next table so don't cross page boundaries
 ;
-MazePF0Data_a
+MazePF0Data_00
 EndDeathSoundFreq
    .byte $20 |  8 ;|..X.....|
    .byte $20 |  4 ;|..X.....|
@@ -1075,7 +1021,7 @@ GameStartBaseTuneTable
    .byte $20 | 10 ;|..X.....|
    .byte $20 | 17 ;|..X.....|
    .byte $C0 |  7 ;|XX......|
-MazePF1Data_c
+MazePF1Data_02
    .byte $00 ;|........|
    .byte $00 ;|........|
    .byte $01 ;|.......X|
@@ -1098,7 +1044,7 @@ MazePF1Data_c
 ;
 ; last 2 bytes shared with next table so don't cross page boundaries
 ;
-MazePF2Data_c
+MazePF2Data_02
    .byte $00 ;|........|
    .byte $00 ;|........|
    .byte $80 ;|X.......|
@@ -1120,7 +1066,7 @@ MazePF2Data_c
    .byte $88 ;|X...X...|
    .byte $80 ;|X.......|
    .byte $80 ;|X.......|
-MazePF1Data_a
+MazePF1Data_00
    .byte $00 ;|........|
    .byte $7F ;|.XXXXXXX|
    .byte $01 ;|.......X|
@@ -1144,7 +1090,7 @@ MazePF1Data_a
 ;
 ; last byte shared with next table so don't cross page boundaries
 ;
-MazePF2Data_e
+MazePF2Data_04
    .byte $FF ;|XXXXXXXX|
    .byte $00 ;|........|
    .byte $8F ;|X...XXXX|
@@ -1166,7 +1112,7 @@ MazePF2Data_e
    .byte $8F ;|X...XXXX|
    .byte $8F ;|X...XXXX|
    .byte $80 ;|X.......|
-MazePF1Data_b
+MazePF1Data_01
    .byte $00 ;|........|
    .byte $7F ;|.XXXXXXX|
    .byte $01 ;|.......X|
@@ -1190,7 +1136,7 @@ MazePF1Data_b
 ;
 ; last byte shared with next table so don't cross page boundaries
 ;
-MazePF1Data_d
+MazePF1Data_03
    .byte $FF ;|XXXXXXXX|
    .byte $00 ;|........|
    .byte $7F ;|.XXXXXXX|
@@ -1214,7 +1160,7 @@ MazePF1Data_d
 ;
 ; last byte shared with next table so don't cross page boundaries
 ;
-MazePF2Data_a
+MazePF2Data_00
    .byte $00 ;|........|
    .byte $8F ;|X...XXXX|
    .byte $80 ;|X.......|
@@ -1238,7 +1184,7 @@ MazePF2Data_a
 ;
 ; last byte shared with next table so don't cross page boundaries
 ;
-MazePF1Data_e
+MazePF1Data_04
    .byte $FF ;|XXXXXXXX|
    .byte $00 ;|........|
    .byte $7F ;|.XXXXXXX|
@@ -1262,7 +1208,7 @@ MazePF1Data_e
 ;
 ; last byte shared with next table so don't cross page boundaries
 ;
-MazePF2Data_b
+MazePF2Data_01
    .byte $00 ;|........|
    .byte $8F ;|X...XXXX|
    .byte $80 ;|X.......|
@@ -1286,7 +1232,7 @@ MazePF2Data_b
 ;
 ; last byte shared with next table so don't cross page boundaries
 ;
-MazePF2Data_d
+MazePF2Data_03
    .byte $FF ;|XXXXXXXX|
    .byte $00 ;|........|
    .byte $8F ;|X...XXXX|
@@ -1424,15 +1370,16 @@ LivesIndicatorCount
    .byte ONE_COPY, ONE_COPY, TWO_COPIES, THREE_COPIES
 
 VerticalMazeValues
-   .byte 21 - 8, 29 - 8, 45 - 8, 61 - 8, 77 - 8, 97 - 8, 113 - 8, 129 - 8, 145 - 8, 153 - 8
+   .byte 13, 21, 37, 53, 69, 89
+   .byte 105, 121, 137, 145
 
 MonsterAnimationTable
 ;
 ; first frame animation
 ;
-   .byte <MonstersDown_01 - H_KERNEL
-   .byte <MonstersUp_01 - H_KERNEL
-   .byte <MonstersHoriz_01 - H_KERNEL
+   .byte <[MonstersDown_00 - H_KERNEL]
+   .byte <[MonstersUp_00 - H_KERNEL]
+   .byte <[MonstersHorizontal_00 - H_KERNEL]
 ;
 ; NOTE: 5 bytes *MUST* separate the monster animation values...sorry about this 
 ; but it saves ~8 bytes
@@ -1443,9 +1390,9 @@ MonsterStaticTargetHorizPos
 ;
 ; second frame animation
 ;
-   .byte <MonstersDown_02 - H_KERNEL
-   .byte <MonstersUp_02 - H_KERNEL
-   .byte <MonstersHoriz_02 - H_KERNEL
+   .byte <[MonstersDown_01 - H_KERNEL]
+   .byte <[MonstersUp_01 - H_KERNEL]
+   .byte <[MonstersHorizontal_01 - H_KERNEL]
 
 ;----------------------------------------------------------SetFruitIndexForLevel
 ;
@@ -1500,7 +1447,8 @@ ReverseDirToJoystickValueTable
    .byte ~MY_MOVE_RIGHT & P0_JOYSTICK_MASK
 
 MonsterBlueAnimationTable
-   .byte <MonstersBlue_01 - H_KERNEL, <MonstersBlue_02 - H_KERNEL
+   .byte <[MonstersBlue_00 - H_KERNEL]
+   .byte <[MonstersBlue_01 - H_KERNEL]
 
 DirToJoystickValueTable
    .byte MY_MOVE_UP
@@ -1508,14 +1456,14 @@ DirToJoystickValueTable
    .byte MY_MOVE_DOWN
    .byte MY_MOVE_LEFT
 
-   BOUNDRY (H_KERNEL - 4)
+   FILL_BOUNDARY (H_KERNEL - 4), 0
    CHECKBOUNDARY (H_KERNEL - 4)
 ;
 ; NOTE: These sprites *MUST* reside on the same page as the number fonts. Their
-; definition can start anywhere below $xxA1 (i.e. H_KERNEL - 4) as long as they
+; definition can start anywhere above $xxA1 (i.e. H_KERNEL - 4) as long as they
 ; don't cross a page boundary.
 ;
-PacmanDeathSprites9
+PacmanDeathSprites_09
    .byte $10 ;|...X....|
    .byte $10 ;|...X....|
    .byte $10 ;|...X....|
@@ -1546,7 +1494,7 @@ FruitLowScoreTable
 ; last 11 bytes shared with table below...
 ;
 Blank
-PacmanDeathSprites11
+PacmanDeathSprites_11
    .byte $00 ;|........|
    .byte $00 ;|........|
    .byte $00 ;|........|
@@ -1567,7 +1515,7 @@ MonsterEyes
    .byte $28 ;|..X.X...|
    .byte $00 ;|........|
    .byte $00 ;|........|
-PacmanDeathSprites1
+PacmanDeathSprites_01
    .byte $28 ;|..X.X...|
    .byte $7C ;|.XXXXX..|
    .byte $FE ;|XXXXXXX.|
@@ -1579,7 +1527,7 @@ PacmanDeathSprites1
    .byte $00 ;|........|
    .byte $00 ;|........|
    .byte $00 ;|........|
-PacmanDeathSprites6
+PacmanDeathSprites_06
    .byte $28 ;|..X.X...|
    .byte $7C ;|.XXXXX..|
    .byte $7C ;|.XXXXX..|
@@ -1591,7 +1539,7 @@ PacmanDeathSprites6
    .byte $00 ;|........|
    .byte $00 ;|........|
    .byte $00 ;|........|
-PacmanDeathSprites7
+PacmanDeathSprites_07
    .byte $28 ;|..X.X...|
    .byte $38 ;|..XXX...|
    .byte $38 ;|..XXX...|
@@ -1670,10 +1618,10 @@ MazeLoop
    php                        ; 3 = @27   push to enable/diable ball VDEL'd
    lda #H_OBJECTS - 1         ; 2
    dcp object1Offset          ; 5 = @34
-   bcs .storePlayer1Sprite_c  ; 2
+   bcs .storePlayer1Sprite_02 ; 2
    lda #0                     ; 2
    NOP_W                      ; -1
-.storePlayer1Sprite_c
+.storePlayer1Sprite_02
    lda (object1GraphicPtr),y  ; 5
    dey                        ; 2
    sta object1Sprite          ; 3 = @47
@@ -1701,10 +1649,10 @@ JumpIntoKernel SUBROUTINE
    tax                        ; 2
    and #PF0_DOT_MASK          ; 2         keep the PF0 dot value
    sta PF0                    ; 3 = @30   draw dot pattern for right PF0
-   bcs .drawPlayer0_a         ; 2
+   bcs .drawPlayer0_00        ; 2
    lda #0                     ; 2
    NOP_W                      ; -1
-.drawPlayer0_a
+.drawPlayer0_00
    lda (objectGraphicPtr),y   ; 5
    sta GRP0                   ; 3 = @41   draw object for 1st line of kernel
    txa                        ; 2
@@ -1720,56 +1668,56 @@ JumpIntoKernel SUBROUTINE
    lda mazeColor              ; 3
    sta COLUPF                 ; 3 = @74
 ;--------------------------------------   first line of maze
-   lda MazePF0Data_a,x        ; 4 = @02
+   lda MazePF0Data_00,x       ; 4 = @02
    and #PF0_WALL_MASK         ; 2
    sta PF0                    ; 3 = @07
-   bcs .drawPlayer1_a         ; 2
+   bcs .drawPlayer1_00        ; 2
    lda #0                     ; 2
    NOP_W                      ; -1
-.drawPlayer1_a
+.drawPlayer1_00
    lda (object1GraphicPtr),y  ; 5
    sta GRP1                   ; 3 = @18
-   lda MazePF1Data_a,x        ; 4
+   lda MazePF1Data_00,x       ; 4
    sta PF1                    ; 3 = @25   < 27
-   lda MazePF2Data_a,x        ; 4
+   lda MazePF2Data_00,x       ; 4
    sta PF2                    ; 3 = @32   < 38
    dey                        ; 2
    lda #H_OBJECTS - 1         ; 2
    dcp objectOffset           ; 5
-   bcs .drawObject_b          ; 2
+   bcs .drawPlayer0_01        ; 2
    lda #0                     ; 2
    NOP_W                      ; -1
-.drawObject_b
+.drawPlayer0_01
    lda (objectGraphicPtr),y   ; 5
    sta GRP0                   ; 3 = @52   draw object for 2nd line of kernel
    lda #H_OBJECTS - 1         ; 2
    dcp object1Offset          ; 5 = @59
-   lda MazePF2Data_b,x        ; 4
+   lda MazePF2Data_01,x       ; 4
    sta PF2                    ; 3 = @66
-   lda MazePF1Data_b,x        ; 4
+   lda MazePF1Data_01,x       ; 4
    sta PF1                    ; 3 = @73
-   bcs .drawPlayer1_b         ; 2
+   bcs .drawPlayer1_01        ; 2
 ;--------------------------------------   second line of maze
    lda #0                     ; 2 = @01
    NOP_W                      ; -1
-.drawPlayer1_b
+.drawPlayer1_01
    lda (object1GraphicPtr),y  ; 5 = @05
    sta GRP1                   ; 3 = @08
    dey                        ; 2
    lda #H_OBJECTS - 1         ; 2
    dcp objectOffset           ; 5
-   bcs .drawObject_c          ; 2
+   bcs .drawPlayer0_02        ; 2
    lda #0                     ; 2
    NOP_W                      ; -1
-.drawObject_c
+.drawPlayer0_02
    lda (objectGraphicPtr),y   ; 5
    sta GRP0                   ; 3 = @28   draw object for 3rd line of kernel
    lda #H_OBJECTS - 1         ; 2
    dcp object1Offset          ; 5 = @35
-   bcs .storePlayer1Sprite_c  ; 2
+   bcs .storePlayer1Sprite_02 ; 2
    lda #0                     ; 2
    NOP_W                      ; -1
-.storePlayer1Sprite_c
+.storePlayer1Sprite_02
    lda (object1GraphicPtr),y  ; 5
    sta object1Sprite          ; 3 = @46
    dey                        ; 2         reduce scan line for 3rd line of maze
@@ -1779,20 +1727,20 @@ JumpIntoKernel SUBROUTINE
 ; ------------------ Maze PF Timings ------------------
 ; | PF0 |   PF1   |   PF2   |   PF2   |   PF1   | PF0 |
 ; |22.??|27 ..  ??|38 ..  ??|48 ..  ??|59 ..  67|70.??|
-   lda MazePF2Data_c,x        ; 4
+   lda MazePF2Data_02,x       ; 4
    sta PF2                    ; 3 = @66
-   lda MazePF1Data_c,x        ; 4
+   lda MazePF1Data_02,x       ; 4
    sta PF1                    ; 3 = @73
 ;--------------------------------------   third line of maze
-   lda MazePF0Data_c,x        ; 4 = @01
+   lda MazePF0Data_02,x       ; 4 = @01
    and #PF0_WALL_MASK         ; 2
    sta PF0                    ; 3 = @06
    lda object1Sprite          ; 3
    sta GRP1                   ; 3 = @12
-   bcs .drawObject_d          ; 2
+   bcs .drawPlayer0_03        ; 2
    lda #0                     ; 2
    NOP_W                      ; -1
-.drawObject_d
+.drawPlayer0_03
    lda (objectGraphicPtr),y   ; 5
    sta GRP0                   ; 3 = @23   draw object for 4th line of kernel
    lda #H_OBJECTS - 1         ; 2
@@ -1808,29 +1756,29 @@ JumpIntoKernel SUBROUTINE
    sta GRP1                   ; 3 = @03
    lda #H_OBJECTS - 1         ; 2
    dcp objectOffset           ; 5
-   bcs .drawObject_e          ; 2
+   bcs .drawPlayer0_04        ; 2
    lda #0                     ; 2
    NOP_W                      ; -1
-.drawObject_e
+.drawPlayer0_04
    lda (objectGraphicPtr),y   ; 5
    sta GRP0                   ; 3 = @21   draw object for 5th line of kernel
    lda #H_OBJECTS - 1         ; 2
    sta WSYNC
 ;--------------------------------------   fifth line of maze
    dcp object1Offset          ; 5 = @05
-   bcs .drawPlayer1_f         ; 2
+   bcs .drawPlayer1_05        ; 2
    lda #0                     ; 2
    NOP_W                      ; -1
-.drawPlayer1_f
+.drawPlayer1_05
    lda (object1GraphicPtr),y  ; 5
    sta GRP1                   ; 3 = @16
    dey                        ; 2
    lda #H_OBJECTS - 1         ; 2
    dcp objectOffset           ; 5
-   bcs .drawObject_f          ; 2
+   bcs .drawPlayer0_05        ; 2
    lda #0                     ; 2
    NOP_W                      ; -1
-.drawObject_f
+.drawPlayer0_05
    lda (objectGraphicPtr),y   ; 5
    sta GRP0                   ; 3 = @36   draw object for 6th line of kernel
    SLEEP_5                    ; 5
@@ -1842,47 +1790,47 @@ JumpIntoKernel SUBROUTINE
 .drawPlayer1
    lda (object1GraphicPtr),y  ; 5
    sta object1Sprite          ; 3 = @59
-   lda MazePF2Data_d,x        ; 4
+   lda MazePF2Data_03,x       ; 4
    sta PF2                    ; 3 = @66
-   lda MazePF1Data_d,x        ; 4
+   lda MazePF1Data_03,x       ; 4
    sta PF1                    ; 3 = @73
    lda object1Sprite          ; 3
 ;--------------------------------------   sixth line of maze
    sta GRP1                   ; 3 = @03
-   lda MazePF0Data_d,x        ; 4
+   lda MazePF0Data_03,x       ; 4
    and #PF0_WALL_MASK         ; 2
    sta PF0                    ; 3 = @12
    dey                        ; 2
    lda #H_OBJECTS - 1         ; 2
    dcp objectOffset           ; 5
-   bcs .drawObject_g          ; 2
+   bcs .drawPlayer0_06        ; 2
    lda #0                     ; 2
    NOP_W                      ; -1
-.drawObject_g
+.drawPlayer0_06
    lda (objectGraphicPtr),y   ; 5
    sta GRP0                   ; 3 = @32   draw object for 7th line of kernel
    lda #H_OBJECTS - 1         ; 2
    dcp object1Offset          ; 5
-   bcs .storePlayer1Sprite_b  ; 2
+   bcs .storePlayer1Sprite_01 ; 2
    lda #0                     ; 2
    NOP_W                      ; -1
-.storePlayer1Sprite_b
+.storePlayer1Sprite_01
    lda (object1GraphicPtr),y  ; 5
    sta object1Sprite          ; 3 = @50
    dey                        ; 2
    lda #H_OBJECTS - 1         ; 2         prepare logic to draw player 0 on
    dcp objectOffset           ; 5         next scan line since we have time
-   lda MazePF2Data_e,x        ; 4
+   lda MazePF2Data_04,x       ; 4
    sta PF2                    ; 3 = @66   > 59...OKAY
-   lda MazePF1Data_e,x        ; 4
+   lda MazePF1Data_04,x       ; 4
    sta PF1                    ; 3 = @73   > 67...OKAY
    lda object1Sprite          ; 3
 ;--------------------------------------   seventh line of maze
    sta GRP1                   ; 3 = @01
-   bcs .drawObject_h          ; 2
+   bcs .drawPlayer0_07        ; 2
    lda #0                     ; 2
    NOP_W                      ; -1
-.drawObject_h
+.drawPlayer0_07
    lda (objectGraphicPtr),y   ; 5
    sta GRP0                   ; 3 = @12   draw object for 8th line of kernel
    dex                        ; 2
@@ -1895,11 +1843,11 @@ Start
 ;
 ;   sei                             ; No interrupts are used for this game. This
                                     ; is here for clarity purposes and commented
-                                    ; out to save 1 byte :-)
+                                    ; out to save 1 byte
    cld                              ; clear BCD bit
    ldy INTIM                        ; for random number seed
 ;
-; The next routine comes courtesy of Andrew Davie :-) The routine clears all 
+; The next routine comes courtesy of Andrew Davie. The routine clears all
 ; variables, TIA registers, and initializes the stack pointer to #$FF in 8
 ; bytes. It does this in the unusual way of wrapping the stack. Very ingenious!!
 ;
@@ -1944,7 +1892,7 @@ InkyInterestedOffsetValues
    .byte 0 - 1, -INKY_INTERESTED_OFFSET_VALUE - 1;, 0 - 1
 ;
 ; last byte shared with table below...
-;
+;  
 ROMDotPatterns
    .byte $FF
    .byte $A0
@@ -1968,16 +1916,16 @@ ROMDotPatterns
    .byte $FF
 ;
 ; NOTE: Pac-man animation sprites *MUST* reside on the same page. Their 
-; definition can start anywhere below $xxA1 (i.e. H_KERNEL - 4) as long as they 
+; definition can start anywhere above $xxA1 (i.e. H_KERNEL - 4) as long as they 
 ; don't cross a page boundary. These sprites were re-done by Stefan Haddewig.
 ;
 
-   BOUNDRY (H_KERNEL - 4)
+   FILL_BOUNDARY (H_KERNEL - 4), 0
    CHECKBOUNDARY (H_KERNEL - 4)
 
 PacmanSprites
-PacmanUp1
-PacmanDeathSprites0
+PacmanUp_01
+PacmanDeathSprites_00
    .byte $38 ;|..XXX...|
    .byte $7C ;|.XXXXX..|
    .byte $7C ;|.XXXXX..|
@@ -1988,7 +1936,7 @@ PacmanDeathSprites0
 ;
 ; last 4 bytes shared with next table so don't cross page boundaries
 ;
-PacmanDown1
+PacmanDown_01
    .byte $00 ;|........|
    .byte $00 ;|........|
    .byte $00 ;|........|
@@ -2002,7 +1950,7 @@ PacmanDown1
 ;
 ; last byte shared with next table so don't cross page boundaries
 ;
-PacmanUp0
+PacmanUp_00
    .byte $38 ;|..XXX...|
    .byte $7C ;|.XXXXX..|
    .byte $7C ;|.XXXXX..|
@@ -2015,7 +1963,7 @@ PacmanUp0
 ;
 ; last 2 bytes shared with next table so don't cross page boundaries
 ;
-PacmanDown0
+PacmanDown_00
    .byte $00 ;|........|
    .byte $00 ;|........|
    .byte $44 ;|.X...X..|
@@ -2044,7 +1992,7 @@ PacmanStationary
 ; last byte shared with next table so don't cross page boundaries
 ;
 LivesIndicator
-PacmanHoriz0
+PacmanHorizontal_00
    .byte $38 ;|..XXX...|
    .byte $7C ;|.XXXXX..|
    .byte $7C ;|.XXXXX..|
@@ -2058,7 +2006,7 @@ PacmanHoriz0
 ;
 ; last byte shared with next table so don't cross page boundaries
 ;
-PacmanHoriz1
+PacmanHorizontal_01
    .byte $38 ;|..XXX...|
    .byte $78 ;|.XXXX...|
    .byte $70 ;|.XXX....|
@@ -2132,8 +2080,8 @@ Overscan
 ;
 ; Center players on screen for 48-pixel display kernel.
 ;
-   ldx #HMOVE_R5 | THREE_COPIES     ; = $73 (%01110011) only top nybbles used
-   stx HMBL                         ; move ball right 7 pixels = @148
+   ldx #HMOVE_R5 | THREE_COPIES | VERTICAL_DELAY
+   stx HMBL
    stx NUSIZ0                       ; 3 copies of GRP0 close (D1 and D0 = 1)
    stx NUSIZ1                       ; 3 copies of GRP1 close (D1 and D0 = 1)
    stx VDELP0                       ; vertical delay for GRP0 (D0 = 1)
@@ -2206,7 +2154,7 @@ CheckAttactTimer
 .resetAttackTimerValue
    txa                              ; move attack timer to accumulator
    and #<~ATTACK_TIMER              ; clear attack timer value
-   adc #((1 << 5) + ATTACK_TIMER_VALUE) - 1; increment number of times done...carry set
+   adc #((1 << 5) + ATTACK_TIMER_VALUE) - 1;increment number of times done...carry set
    sta attackTimer                  ; set new attack timer value
    lda gameState                    ; get current game state
    and #<~NEW_LEVEL                 ; clear the NEW_LEVEL flag
@@ -2268,7 +2216,6 @@ PlayGameSounds
    sta AUDF0
    lda #12
    sta AUDC0
-   lsr                              ; a = 6
    bne .setChannel0Volume           ; unconditional branch
 
 PlayGameStartTune
@@ -2315,25 +2262,41 @@ PlayGameStartTune
    jmp .skipPlayGameSounds
 
 .checkToPlayEatingDotSound
-   lda pacmanAttributes             ; get Pac-man attributes
-   bpl .donePacmanSounds            ; skip dot eating sound if not delayed
-   lda #30
+   ldy dotEatingTimer               ; get dot eating timer value
+   beq .resetPlayingEatingDotSound  ; branch if reached end of sequence
+   lda EatingDotSoundFrequencyValues - 1,y;get dot sound frequency values
+   bne .setEatingDotSoundValues     ; branch if valid frequency value
+   bit pacmanAttributes             ; check Pac-man attribute value
+   bpl .turnOffPacmanSounds         ; branch if not paused for eating dot
+   bmi .decrementDotEatingTimer     ; unconditional branch
+
+.setEatingDotSoundValues
    sta AUDF0
-   lda #7
+   lda #12
    sta AUDC0
-   asl                              ; a = 14
+   lda #14
+.decrementDotEatingTimer
+   dey
+   sty dotEatingTimer
+   bpl .setChannel0Volume           ; unconditional branch
+
+.resetPlayingEatingDotSound
+   lda #<[EatingDotSoundFrequencyValues_END - EatingDotSoundFrequencyValues]
+   sta dotEatingTimer
+.turnOffPacmanSounds
+   lda #0
 .setChannel0Volume
    sta AUDV0                        ; set volume for channel 0
 .donePacmanSounds
 
 .playMonsterSounds
    lda extraPlayerSoundIndex        ; get bonus sound index
-   beq .checkToPlayMonsterRetreatSound; branch if not playing bonus sound
+   beq .checkToPlayMonsterRetreatSound;branch if not playing bonus sound
    lsr                              ; shift D0 to carry
    lda frameCount                   ; get current frame count
    and #7
    bne .skipDecrementBonusSoundIndex
-   dec extraPlayerSoundIndex        ; reduce 1up sound index
+   dec extraPlayerSoundIndex        ; reduce 1UP sound index
 .skipDecrementBonusSoundIndex
    lda #10
    bcs .setBonusSoundAttributes
@@ -2484,7 +2447,7 @@ SetToDemoMode
    stx gameLevel                    ; set game level back to CHERRY_LEVEL (i.e. x = 0)
    jsr NewLevel
    lda playerState                  ; get current player state
-   and #<~(LIVES_MASK | START_GAME_MUSIC); clear number of lives and turn off start up
+   and #<~(LIVES_MASK | START_GAME_MUSIC);clear number of lives and turn off start up
    sta playerState                  ; music for game start up
    lda #DEMO_MODE
    sta gameBoardState               ; place game in DEMO_MODE
@@ -2521,15 +2484,11 @@ DeterminePacmanNewDirection
    bne .jmpToSetObjectKernelValues  ; unconditional branch
 
 .determinePacmanNewDirection
-   ldx eatingMonsterSoundIndex      ; get eating monster sound index
-   bne .skipTurnPacmanSoundOff
-   stx AUDV0                        ; turn off Pac-man sound if not eating monster
-.skipTurnPacmanSoundOff
    ldx #ID_PACMAN
    jsr DetermineAllowedMotion       ; determine if Pac-man at intersection
    sec                              ; set carry so Pac-man slows for DEMO_MODE
    bit gameBoardState               ; check current game board status
-   bvs .doneDeterminePacmanNewDirectionForDemo; branch if in DEMO_MODE
+   bvs .doneDeterminePacmanNewDirectionForDemo;branch if in DEMO_MODE
    bit gameState                    ; check current game state
    bmi .doneDeterminePacmanNewDirection; skip movement if in NEW_LEVEL_PAUSE
 .movePacmanWithJoystick
@@ -2538,13 +2497,13 @@ DeterminePacmanNewDirection
    tay
    lda DirToJoystickValueTable,y    ; get joystick value based on direction
    eor #P0_NO_MOVE                  ; flip the bit values to look like SWCHA values
-   sta diagMotionMask
+   sta joystickDirectionMask
    lda SWCHA                        ; read joystick values
    and #P0_NO_MOVE
    eor #P0_NO_MOVE                  ; flip the bit values
    beq .joystickNotMoved
 .joystickMoved
-   and diagMotionMask               ; clear diagonal motion
+   and joystickDirectionMask        ; mask current directions
    and allowedMotion                ; and with allowed motion
    beq .joystickNotMoved            ; branch if direction not allowed
    jsr SetYRegisterToDiv16          ; divide motion value by 16 and place in y
@@ -2552,7 +2511,9 @@ DeterminePacmanNewDirection
    and #<~PACMAN_DIRECTION_MASK     ; clear the direction values
    ora JoystickDirectionTable - 1,y ; or in new desired direction
    sta pacmanAttributes
-   bcc MovePacman                   ; unconditional branch
+   lda #0
+   sta pacmanMotionDelay            ; reset Pac-man motion delay (fast cornering)
+   beq MovePacman                   ; unconditional branch
 
 .joystickNotMoved
    txa                              ; get Pac-man's attributes
@@ -2569,10 +2530,10 @@ DeterminePacmanNewDirection
 ;
 MovePacman
    ldx pacmanAteFruit               ; check to see if Pac-man ate fruit
-   bne .determinePacmanMotionDelayIndex; branch to bypass movement pause if ate fruit
+   bne .determinePacmanMotionDelayIndex;branch to bypass movement pause if ate fruit
    lda gameBoardState               ; check current game board state
    ora playerState                  ; or in current player state
-   and #GAME_BOARD_DONE | DEATH_SEQUENCE; keep D7
+   and #GAME_BOARD_DONE | DEATH_SEQUENCE;keep D7
    ora eatingMonsterSoundIndex
    bne .donePacmanMove              ; branch if level done or Pac-man caught
 .determinePacmanMotionDelayIndex
@@ -2595,7 +2556,7 @@ MovePacman
    and #PACMAN_DIRECTION_MASK       ; clear the direction values
    tay
    lda allowedMotion
-   and ReverseDirToJoystickValueTable,y; clear direction so Pac-man can't reverse
+   and ReverseDirToJoystickValueTable,y;clear direction so Pac-man can't reverse
    sta allowedMotion                ; direction in DEMO_MODE
    jsr BlueMonsterAI                ; use a random direction for Pac-man in DEMO_MODE
 .setPacmanDemoDirection
@@ -2673,7 +2634,7 @@ CheckForLevelDone SUBROUTINE
    stx AUDV1                        ; turn off monster sounds
 .setObjectStatesForLevelDone
    jsr RemoveObjects
-   ldy #<PacmanStationary - H_KERNEL - 1; set Pac-man stationary animation
+   ldy #<[PacmanStationary - H_KERNEL] - 1;set Pac-man stationary animation
 .levelNotDone
    sty pacmanLSBValue
 
@@ -2792,7 +2753,7 @@ CheckForEatingDots
    bcs .bcsDoneEatingDots           ; skip processing if out of range
    cmp #PACMAN_START_X - 2
    bcc .pacmanOnLeftSide
-   cmp #PACMAN_START_X - 2 + 12;[XMAX / 2] + 16 - 1
+   cmp #PACMAN_START_X - 2 + 12
    bcc .bccDoneEatingDots
 .pacmanOnRightSide
    sbc #33 - 8                      ; carry set -- subtract right min value
@@ -2812,14 +2773,11 @@ CheckForEatingDots
 .branchToDoneEatingDots
    bne .bccDoneEatingDots           ; leave if not eating dots
    tya
-   lsr                              ; divide by 8 to get bit masking value
-   lsr
-   lsr
+   jsr SetYRegisterToDiv8           ; divide by 8 (and set y) for bit masking
    beq .checkForEatingEnergizer     ; if zero then in energizer zone
    cmp #15
    bne .notEatingEnergizer          ; if 15 then in energizer zone
 .checkForEatingEnergizer
-   tay                              ; move bit masking value to y register
    lda #NE_ENERGIZER_MASK_VALUE     ; get NE_ENERGIZER_MASK_VALUE
    cpx #NE_ENERGIZER_RAM_PTR
    beq .pacmanEatingEnergizer       ; branch if in NE energizer position
@@ -2943,7 +2901,7 @@ CheckToEnableFruit
 .setFruitShownState
    ora score + 2                    ; set the state to show which fruit was shown
    sta score + 2
-   lda #FRUIT_TIMER
+   lda #FRUIT_TIMER_VALUE
    sta fruitTimer                   ; init the fruit timer for ~15 seconds
    lda gameBoardState               ; get current game board state
    ora #FRUIT_SHOW
@@ -2983,7 +2941,7 @@ SetObjectKernelValues
    jsr SetIndexFromGameLevel        ; set y to index for current fruit level
    lda FruitOffsetTable,y
    clc
-   adc #<(FruitSprites - H_OBJECTS - H_KERNEL - 1)
+   adc #<[FruitSprites - H_OBJECTS - H_KERNEL] - 1
    sta fruitGraphicLSB              ; set fruit LSB value
    tya                              ; move fruit index value to accumulator
    lsr                              ; divide value by 2
@@ -3007,7 +2965,7 @@ SetObjectKernelValues
    bne .setMonsterEyeColor
 .dontBlinkMonsters
    lda #BLUE_MONSTER_COLOR          ; set accumulator for blue color state
-   NOP_W                            ; skip next 2 bytes :-)
+   NOP_W                            ; skip next 2 bytes
 .setMonsterEyeColor
    lda #EYE_COLOR                   ; set accumulator for eye color state
 .setObjectColor
@@ -3257,7 +3215,7 @@ MoveMonsters
    lda MonsterPointsLSB - 1,y       ; get LSB value for monster points
    NOP_W                            ; skip next 2 bytes
 .setMonsterEyeAnimation
-   lda #<MonsterEyes - H_KERNEL     ; get the LSB value for monster eye sprite
+   lda #<[MonsterEyes - H_KERNEL]   ; get the LSB value for monster eye sprite
    ldy #>MonsterEyes
 .setMonsterGraphicsPointers
    sta objectGraphicLSB,x           ; set graphic pointer LSB value
@@ -3424,7 +3382,7 @@ DrawIt
    lda object0LSBValues,x     ; 4
    sta objectGraphicPtr       ; 3
    lda object0OffsetValues,x  ; 4
-   ldx #<ENABL - 1            ; 2
+   ldx #<[ENABL - 1]          ; 2
    txs                        ; 2         set stack to ENABL for chamber door
    sta WSYNC
 ;--------------------------------------
@@ -3595,7 +3553,7 @@ BlueMonsterAI
 .inkyOverflowHoriz
    sbc blinkyHorizPos               ; subtract Blinky's horizontal position...carry set
    bcc .setInkyHorizontalTarget     ; branch if no overflow has happened
-   lda #XMAX + INKY_INTERESTED_OFFSET_VALUE; Inky target right most pixel
+   lda #XMAX + INKY_INTERESTED_OFFSET_VALUE;Inky target right most pixel
 .setInkyHorizontalTarget
    sta targetHorizPos
    lda InkyInterestedOffsetValues + 1,y;read Inky vertical offset value
@@ -3606,11 +3564,11 @@ BlueMonsterAI
    sec
    sbc blinkyVertPos                ; subtract Blinky's vertical position
    bcs .setTargetVertPos            ; branch if no overflow has happened
-   bcc .setMonsterToTargetLowestVertPoint; unconditional branch
+   bcc .setMonsterToTargetLowestVertPoint;unconditional branch
 
 .pinkyInterested
    adc PinkyInterestedOffsetValues,y; carry set here
-   cmp #-PINKY_INTERESTED_OFFSET_VALUE
+   cmp #<-PINKY_INTERESTED_OFFSET_VALUE
    bcc .setPinkyHorizontalTarget    ; branch if no negative overflow
    lda #0                           ; force Pinky to target left most pixel
 .setPinkyHorizontalTarget
@@ -3618,7 +3576,7 @@ BlueMonsterAI
    sec                              ; set carry...value offset by 1
    lda PinkyInterestedOffsetValues + 1,y
    adc pacmanVertPos
-   cmp #-PINKY_INTERESTED_OFFSET_VALUE
+   cmp #<-PINKY_INTERESTED_OFFSET_VALUE
    bcc .setTargetVertPos            ; branch if no negative overflow
 .setMonsterToTargetLowestVertPoint
    lda #0                           ; force Pinky to target lower most pixel
@@ -3626,7 +3584,7 @@ BlueMonsterAI
    
 .checkIfBlinkyOrClydeInterested
    sta targetHorizPos               ; set horiz target to Pac-man's horiz position
-   lda pacmanVertPos                ;
+   lda pacmanVertPos
    sta targetVertPos                ; set monster's target to Pac-man's vertical position
    bcc DetermineMonsterNewDirection ; branch if Blinky
 .clydeInterested
@@ -3651,7 +3609,7 @@ BlueMonsterAI
 .inkyOverflowVert
    sbc blinkyVertPos                ; subtract Blinky's vertical position...carry set
    bcc .setTargetVertPos            ; branch if no overflow has happened
-   lda #H_KERNEL + INKY_INTERESTED_OFFSET_VALUE; Inky target upper most pixel
+   lda #H_KERNEL + INKY_INTERESTED_OFFSET_VALUE;Inky target upper most pixel
 .setTargetVertPos
    sta targetVertPos
 ;---------------------------------------------------DetermineMonsterNewDirection
@@ -3721,14 +3679,14 @@ SetYRegisterToDiv8
 
 ;
 ; NOTE: Monster animation sprites *MUST* reside on the same page. Their
-; definition can start anywhere below $xxA1 (i.e. H_KERNEL - 4) as long as they
+; definition can start anywhere above $xxA1 (i.e. H_KERNEL - 4) as long as they
 ; don't cross a page boundary.
 ;
-   BOUNDRY (H_KERNEL - 4)
+   FILL_BOUNDARY (H_KERNEL - 4), 0
    CHECKBOUNDARY (H_KERNEL - 4)
 
 MonsterAnimationSprites
-MonstersHoriz_01
+MonstersHorizontal_00
    .byte $AA ;|X.X.X.X.|
    .byte $FE ;|XXXXXXX.|
    .byte $FE ;|XXXXXXX.|
@@ -3740,7 +3698,7 @@ MonstersHoriz_01
    .byte $7C ;|.XXXXX..|
    .byte $7C ;|.XXXXX..|
    .byte $38 ;|..XXX...|
-MonstersHoriz_02
+MonstersHorizontal_01
    .byte $54 ;|.X.X.X..|
    .byte $FE ;|XXXXXXX.|
    .byte $FE ;|XXXXXXX.|
@@ -3752,7 +3710,7 @@ MonstersHoriz_02
    .byte $7C ;|.XXXXX..|
    .byte $7C ;|.XXXXX..|
    .byte $38 ;|..XXX...|
-MonstersDown_01
+MonstersDown_00
    .byte $55 ;|.X.X.X.X|
    .byte $7F ;|.XXXXXXX|
    .byte $6B ;|.XX.X.XX|
@@ -3764,7 +3722,7 @@ MonstersDown_01
    .byte $3E ;|..XXXXX.|
    .byte $3E ;|..XXXXX.|
    .byte $1C ;|...XXX..|
-MonstersDown_02
+MonstersDown_01
    .byte $2A ;|..X.X.X.|
    .byte $7F ;|.XXXXXXX|
    .byte $6B ;|.XX.X.XX|
@@ -3776,7 +3734,7 @@ MonstersDown_02
    .byte $3E ;|..XXXXX.|
    .byte $3E ;|..XXXXX.|
    .byte $1C ;|...XXX..|
-MonstersUp_01
+MonstersUp_00
    .byte $AA ;|X.X.X.X.|
    .byte $FE ;|XXXXXXX.|
    .byte $FE ;|XXXXXXX.|
@@ -3788,7 +3746,7 @@ MonstersUp_01
    .byte $7C ;|.XXXXX..|
    .byte $7C ;|.XXXXX..|
    .byte $38 ;|..XXX...|
-MonstersUp_02
+MonstersUp_01
    .byte $54 ;|.X.X.X..|
    .byte $FE ;|XXXXXXX.|
    .byte $FE ;|XXXXXXX.|
@@ -3802,7 +3760,7 @@ MonstersUp_02
    .byte $38 ;|..XXX...|
 
 MonsterBlueSprites
-MonstersBlue_01
+MonstersBlue_00
    .byte $AA ;|X.X.X.X.|
    .byte $FE ;|XXXXXXX.|
    .byte $AA ;|X.X.X.X.|
@@ -3814,7 +3772,7 @@ MonstersBlue_01
    .byte $7C ;|.XXXXX..|
    .byte $7C ;|.XXXXX..|
    .byte $38 ;|..XXX...|
-MonstersBlue_02
+MonstersBlue_01
    .byte $54 ;|.X.X.X..|
    .byte $FE ;|XXXXXXX.|
    .byte $AA ;|X.X.X.X.|
@@ -3828,7 +3786,11 @@ MonstersBlue_02
    .byte $38 ;|..XXX...|
 
    CHECKPAGE MonsterAnimationSprites
-   
+
+EatingDotSoundFrequencyValues
+   .byte 20, 17, 14, 11, 8, 0, 8, 11, 14, 17, 20, 0
+EatingDotSoundFrequencyValues_END
+
 SirenMaskTable
    .byte $10, $10, $08, $08
 
@@ -3906,7 +3868,7 @@ StartNewGame
    sty gameLevel                    ; set starting game level
    lda gameState                    ; get the current game state
    and #LEVEL_SELECTION_MASK        ; mask to get the current selected level
-   ldx #<(gameBoardState - pacmanLSBValue) + 1
+   ldx #<[gameBoardState - pacmanLSBValue] + 1
    bne .startNewGame                ; unconditional branch
 
 ;-----------------------------------------------------------------------NewLevel
@@ -3915,7 +3877,7 @@ StartNewGame
 ;
 NewLevel
    ldy #0                           ; set y to 0 so dot array is re-initialized
-   ldx #<(dotsRemaining - pacmanLSBValue) + 1
+   ldx #<[dotsRemaining - pacmanLSBValue] + 1
    lda score + 2                    ; get score value
    and #<~FRUIT_SHOWN_MASK          ; remove the FRUIT_SHOWN values
    sta score + 2
@@ -3925,7 +3887,7 @@ NewLevel
 ; Reset Pac-man and monster positions to restart the current level.
 ;
 RestartLevel
-   ldx #<(levelPauseTimer - pacmanLSBValue) + 1
+   ldx #<[levelPauseTimer - pacmanLSBValue] + 1
    lda #NEW_LEVEL_PAUSE
    ora gameState                    ; set game state to show a new level was started
    sta gameState
@@ -3990,20 +3952,20 @@ PacmanDelayTable
 ;
 ; normal Pac-man speeds
 ;
-   .byte SPEED_PACMAN_NORMAL_1, SPEED_PACMAN_NORMAL_2
-   .byte SPEED_PACMAN_NORMAL_3, SPEED_PACMAN_NORMAL_4
+   .byte SPEED_PACMAN_NORMAL_00, SPEED_PACMAN_NORMAL_01
+   .byte SPEED_PACMAN_NORMAL_02, SPEED_PACMAN_NORMAL_03
 ;
 ; blue time Pac-man speeds
 ;
-   .byte SPEED_PACMAN_BLUE_1, SPEED_PACMAN_BLUE_2
-   .byte SPEED_PACMAN_BLUE_3, SPEED_PACMAN_BLUE_4
+   .byte SPEED_PACMAN_BLUE_00, SPEED_PACMAN_BLUE_01
+   .byte SPEED_PACMAN_BLUE_02, SPEED_PACMAN_BLUE_03
 
 LivesIndicatorColor
    .byte BLACK, PACMAN_COLOR, PACMAN_COLOR, PACMAN_COLOR
 
 LevelInitTable
-   .byte <(PacmanStationary - H_KERNEL - 1) ; pacmanLSBValue
-   .byte <(PacmanStationary - H_KERNEL - 1) ; pacmanGraphicLSB
+   .byte <[PacmanStationary - H_KERNEL] - 1 ; pacmanLSBValue
+   .byte <[PacmanStationary - H_KERNEL] - 1 ; pacmanGraphicLSB
 MonsterColorTable
    .byte BLINKY_COLOR               ; blinkyColor
    .byte PINKY_COLOR                ; pinkyColor
@@ -4016,6 +3978,7 @@ MonsterColorTable
    .byte ATTACK_TIMER_VALUE         ; attackTimer
    .byte 0                          ; frameCount
    .byte 0                          ; fruitTimer
+   .byte <[EatingDotSoundFrequencyValues_END - EatingDotSoundFrequencyValues]; dotEatingTimer
    .byte BLINKY_START_X             ; blinkyHorizPos
    .byte PINKY_START_X              ; pinkyHorizPos
    .byte INKY_START_X               ; inkyHorizPos
@@ -4077,10 +4040,7 @@ DetermineAllowedMotion
 
 .setFoundSection
    tya                              ; move object vertical position to accumulator
-   lsr                              ; move section number to lower nybbles
-   lsr
-   lsr
-   lsr
+   jsr SetYRegisterToDiv16          ; move section number to lower nybbles
 .sectionFound
    sta tempSection
    asl                              ; * 2
@@ -4131,10 +4091,10 @@ DetermineAllowedMotion
 
 ;
 ; NOTE: Fruit sprites *MUST* reside on the same page. Their definition can start
-; anywhere below $xx41 (i.e. FRUIT_START_Y - 10) as long as they don't cross a
+; anywhere above $xx41 (i.e. FRUIT_START_Y - 10) as long as they don't cross a
 ; page boundary.
 ;
-   BOUNDRY (FRUIT_START_Y - H_OBJECTS + 1)
+   FILL_BOUNDARY (FRUIT_START_Y - H_OBJECTS + 1), 0
    CHECKBOUNDARY (FRUIT_START_Y - H_OBJECTS + 1)
 
    IF PUBLISHER = ATARIAGE
@@ -4246,10 +4206,10 @@ Grapes
    CHECKBOUNDARY (H_KERNEL - 4)
 ;
 ; NOTE: These sprites *MUST* reside on the same page. Their definition can start
-; anywhere below $xxA1 (i.e. H_KERNEL - 4) as long as they don't cross a page
+; anywhere above $xxA1 (i.e. H_KERNEL - 4) as long as they don't cross a page
 ; boundary.
 ;
-PacmanDeathSprites4
+PacmanDeathSprites_04
    .byte $28 ;|..X.X...|
    .byte $7C ;|.XXXXX..|
    .byte $FE ;|XXXXXXX.|
@@ -4378,10 +4338,10 @@ Grapes
    CHECKBOUNDARY (H_KERNEL - 4)
 ;
 ; NOTE: These sprites *MUST* reside on the same page. Their definition can start
-; anywhere below $xxA1 (i.e. H_KERNEL - 4) as long as they don't cross a page
+; anywhere above $xxA1 (i.e. H_KERNEL - 4) as long as they don't cross a page
 ; boundary.
 ;
-PacmanDeathSprites4
+PacmanDeathSprites_04
    .byte $28 ;|..X.X...|
    .byte $7C ;|.XXXXX..|
    .byte $FE ;|XXXXXXX.|
@@ -4401,7 +4361,7 @@ SirenModulatorTable
 
    ENDIF
 
-PacmanDeathSprites8
+PacmanDeathSprites_08
    .byte $10 ;|...X....|
    .byte $38 ;|..XXX...|
    .byte $38 ;|..XXX...|
@@ -4413,7 +4373,7 @@ PacmanDeathSprites8
    .byte $00 ;|........|
    .byte $00 ;|........|
    .byte $00 ;|........|
-PacmanDeathSprites2
+PacmanDeathSprites_02
    .byte $38 ;|..XXX...|
    .byte $7C ;|.XXXXX..|
    .byte $7C ;|.XXXXX..|
@@ -4425,7 +4385,7 @@ PacmanDeathSprites2
    .byte $00 ;|........|
    .byte $00 ;|........|
    .byte $00 ;|........|
-PacmanDeathSprites3
+PacmanDeathSprites_03
    .byte $38 ;|..XXX...|
    .byte $7C ;|.XXXXX..|
    .byte $7C ;|.XXXXX..|
@@ -4437,7 +4397,7 @@ PacmanDeathSprites3
    .byte $00 ;|........|
    .byte $00 ;|........|
    .byte $00 ;|........|
-PacmanDeathSprites5
+PacmanDeathSprites_05
    .byte $38 ;|..XXX...|
    .byte $FE ;|XXXXXXX.|
    .byte $7C ;|.XXXXX..|
@@ -4451,7 +4411,7 @@ PacmanDeathSprites5
 ;
 ; last byte shared with table below...don't cross page boundary
 ;
-PacmanDeathSprites10
+PacmanDeathSprites_10
    .byte $00 ;|........|
    .byte $44 ;|.X...X..|
    .byte $28 ;|..X.X...|
@@ -4467,37 +4427,37 @@ PacmanDeathSprites10
    CHECKPAGE FruitSprites
 
 PacmanAnimationTable
-   .byte <PacmanHoriz0 - H_KERNEL - 1
-   .byte <PacmanHoriz1 - H_KERNEL - 1
-   .byte <PacmanHoriz0 - H_KERNEL - 1
-   .byte <PacmanStationary - H_KERNEL - 1
+   .byte <[PacmanHorizontal_00 - H_KERNEL] - 1
+   .byte <[PacmanHorizontal_01 - H_KERNEL] - 1
+   .byte <[PacmanHorizontal_00 - H_KERNEL] - 1
+   .byte <[PacmanStationary - H_KERNEL] - 1
 ;
 ; Pac-man up animation data
 ;
-   .byte <PacmanStationary - H_KERNEL - 1
-   .byte <PacmanUp0 - H_KERNEL - 1
-   .byte <PacmanUp1 - H_KERNEL - 1
-   .byte <PacmanUp0 - H_KERNEL - 1
+   .byte <[PacmanStationary - H_KERNEL] - 1
+   .byte <[PacmanUp_00 - H_KERNEL] - 1
+   .byte <[PacmanUp_01 - H_KERNEL] - 1
+   .byte <[PacmanUp_00 - H_KERNEL] - 1
 ;
 ; Pac-man down animation data
 ;
-   .byte <PacmanStationary - H_KERNEL - 1
-   .byte <PacmanDown0 - H_KERNEL - 1
-   .byte <PacmanDown1 - H_KERNEL - 1
-   .byte <PacmanDown0 - H_KERNEL - 1
+   .byte <[PacmanStationary - H_KERNEL] - 1
+   .byte <[PacmanDown_00 - H_KERNEL] - 1
+   .byte <[PacmanDown_01 - H_KERNEL] - 1
+   .byte <[PacmanDown_00 - H_KERNEL] - 1
 
 MonsterDelayTable
-   .byte SPEED_MONSTER_BLUE_1, SPEED_MONSTER_SLOW_1, SPEED_MONSTER_NORMAL_1
-   .byte SPEED_CRUISE_ELROY2_1, SPEED_CRUISE_ELROY1_1
+   .byte SPEED_MONSTER_BLUE_00, SPEED_MONSTER_SLOW_00, SPEED_MONSTER_NORMAL_00
+   .byte SPEED_CRUISE_ELROY2_00, SPEED_CRUISE_ELROY1_00
 
-   .byte SPEED_MONSTER_BLUE_2, SPEED_MONSTER_SLOW_2, SPEED_MONSTER_NORMAL_2
-   .byte SPEED_CRUISE_ELROY2_2, SPEED_CRUISE_ELROY1_2
+   .byte SPEED_MONSTER_BLUE_01, SPEED_MONSTER_SLOW_01, SPEED_MONSTER_NORMAL_01
+   .byte SPEED_CRUISE_ELROY2_01, SPEED_CRUISE_ELROY1_01
 
-   .byte SPEED_MONSTER_BLUE_3, SPEED_MONSTER_SLOW_3, SPEED_MONSTER_NORMAL_3
-   .byte SPEED_CRUISE_ELROY2_3, SPEED_CRUISE_ELROY1_3
+   .byte SPEED_MONSTER_BLUE_02, SPEED_MONSTER_SLOW_02, SPEED_MONSTER_NORMAL_02
+   .byte SPEED_CRUISE_ELROY2_02, SPEED_CRUISE_ELROY1_02
 
-   .byte SPEED_MONSTER_BLUE_4, SPEED_MONSTER_SLOW_4, SPEED_MONSTER_NORMAL_4
-   .byte SPEED_CRUISE_ELROY2_4, SPEED_CRUISE_ELROY1_4
+   .byte SPEED_MONSTER_BLUE_03, SPEED_MONSTER_SLOW_03, SPEED_MONSTER_NORMAL_03
+   .byte SPEED_CRUISE_ELROY2_03, SPEED_CRUISE_ELROY1_03
 
 ;-----------------------------------------------------------------IncrementScore
 ;
@@ -4543,32 +4503,32 @@ DotMaskingBits
    .byte $80, $40, $10, $04, $01, $02, $08, $20
 
 PacmanDeathAnimationLSB
-   .byte <PacmanDeathSprites11 - H_KERNEL - 1
-   .byte <PacmanDeathSprites10 - H_KERNEL - 1
-   .byte <PacmanDeathSprites9 - H_KERNEL - 1
-   .byte <PacmanDeathSprites8 - H_KERNEL - 1
-   .byte <PacmanDeathSprites7 - H_KERNEL - 1
-   .byte <PacmanDeathSprites6 - H_KERNEL - 1
-   .byte <PacmanDeathSprites5 - H_KERNEL - 1
-   .byte <PacmanDeathSprites4 - H_KERNEL - 1
-   .byte <PacmanDeathSprites3 - H_KERNEL - 1
-   .byte <PacmanDeathSprites2 - H_KERNEL - 1
-   .byte <PacmanDeathSprites1 - H_KERNEL - 1
-   .byte <PacmanDeathSprites0 - H_KERNEL - 1
+   .byte <[PacmanDeathSprites_11 - H_KERNEL] - 1
+   .byte <[PacmanDeathSprites_10 - H_KERNEL] - 1
+   .byte <[PacmanDeathSprites_09 - H_KERNEL] - 1
+   .byte <[PacmanDeathSprites_08 - H_KERNEL] - 1
+   .byte <[PacmanDeathSprites_07 - H_KERNEL] - 1
+   .byte <[PacmanDeathSprites_06 - H_KERNEL] - 1
+   .byte <[PacmanDeathSprites_05 - H_KERNEL] - 1
+   .byte <[PacmanDeathSprites_04 - H_KERNEL] - 1
+   .byte <[PacmanDeathSprites_03 - H_KERNEL] - 1
+   .byte <[PacmanDeathSprites_02 - H_KERNEL] - 1
+   .byte <[PacmanDeathSprites_01 - H_KERNEL] - 1
+   .byte <[PacmanDeathSprites_00 - H_KERNEL] - 1
 
 PacmanDeathAnimationMSB
-   .byte >PacmanDeathSprites11
-   .byte >PacmanDeathSprites10
-   .byte >PacmanDeathSprites9
-   .byte >PacmanDeathSprites8
-   .byte >PacmanDeathSprites7
-   .byte >PacmanDeathSprites6
-   .byte >PacmanDeathSprites5
-   .byte >PacmanDeathSprites4
-   .byte >PacmanDeathSprites3
-   .byte >PacmanDeathSprites2
-   .byte >PacmanDeathSprites1
-   .byte >PacmanDeathSprites0
+   .byte >PacmanDeathSprites_11
+   .byte >PacmanDeathSprites_10
+   .byte >PacmanDeathSprites_09
+   .byte >PacmanDeathSprites_08
+   .byte >PacmanDeathSprites_07
+   .byte >PacmanDeathSprites_06
+   .byte >PacmanDeathSprites_05
+   .byte >PacmanDeathSprites_04
+   .byte >PacmanDeathSprites_03
+   .byte >PacmanDeathSprites_02
+   .byte >PacmanDeathSprites_01
+   .byte >PacmanDeathSprites_00
 ;
 ; Maze rules are compressed where two rules use one byte. The upper nybble
 ; represents the even number intersection and the lower nybble represents the
@@ -4852,7 +4812,7 @@ FlagshipColor
 
    ENDIF
 
-   BOUNDRY 252                      ; push to RESET vector (this was done 
+   FILL_BOUNDARY 252, 0             ; push to RESET vector (this was done 
                                     ; instead of using an .ORG to easily keep
                                     ; track of free ROM)
 
