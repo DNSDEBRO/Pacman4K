@@ -16,11 +16,11 @@
 ;
 ; AtariAge build stats...
 ; *** 124 BYTES OF RAM USED 4 BYTES FREE
-; ***  18 BYTES OF ROM FREE
+; ***   3 BYTES OF ROM FREE
 ;
 ; Self publish build stats...
 ; *** 124 BYTES OF RAM USED 4 BYTES FREE
-; ***  20 BYTES OF ROM FREE
+; ***   5 BYTES OF ROM FREE
 ;
 ; Pac-Man® & © of NAMCO LTD., ALL RIGHTS RESERVED.
 ; This project is not endourced by Namco in any way. This project was done by an
@@ -546,7 +546,7 @@ PINKY_HOME_HORIZ        = 14
 INKY_HOME_HORIZ         = BLINKY_HOME_HORIZ
 CLYDE_HOME_HORIZ        = PINKY_HOME_HORIZ
 
-BLINKY_HOME_VERT        = (SIZE_TILE * 4) + H_KERNEL
+BLINKY_HOME_VERT        = [SIZE_TILE * 4] + H_KERNEL
 PINKY_HOME_VERT         = BLINKY_HOME_VERT
 INKY_HOME_VERT          = 0
 CLYDE_HOME_VERT         = INKY_HOME_VERT
@@ -572,11 +572,11 @@ MY_MOVE_LEFT            = %01000000
 MY_MOVE_DOWN            = %00100000
 MY_MOVE_UP              = %00010000
 
-VERT_MOTION             = MY_MOVE_UP    | MY_MOVE_DOWN
-HORIZ_MOTION            = MY_MOVE_LEFT  | MY_MOVE_RIGHT
+VERT_MOTION             = [MY_MOVE_UP    | MY_MOVE_DOWN]
+HORIZ_MOTION            = [MY_MOVE_LEFT  | MY_MOVE_RIGHT]
 
-ALLOW_MOVE_HORIZ        = MY_MOVE_RIGHT | MY_MOVE_LEFT
-ALLOW_MOVE_VERT         = MY_MOVE_UP    | MY_MOVE_DOWN
+ALLOW_MOVE_HORIZ        = [MY_MOVE_RIGHT | MY_MOVE_LEFT]
+ALLOW_MOVE_VERT         = [MY_MOVE_UP    | MY_MOVE_DOWN]
 ;
 ; direction index constants
 ;
@@ -631,13 +631,13 @@ GAME_BOARD_DONE         = %10000000
 DEMO_MODE               = %01000000
 CRUISE_ELROY1_STATE     = %00010000 ; only valid for Blinky
 CRUISE_ELROY2_STATE     = %00100000 ; only valid for Blinky
-CRUISE_ELROY_STATE      = CRUISE_ELROY1_STATE | CRUISE_ELROY2_STATE
+CRUISE_ELROY_STATE      = [CRUISE_ELROY1_STATE | CRUISE_ELROY2_STATE]
 FRUIT_SHOW              = %00001000
 MONSTER_EATEN_MASK      = %00000111
 ;
 ; attack timer values
 ;
-ATTACK_TIMER_VALUE      = 25
+ATTACK_TIMER_VALUE      = 20
 ATTACK_COUNTER_MASK     = %11100000
 ATTACK_TIMER            = %00011111
 
@@ -744,9 +744,9 @@ clydeMotionDelay        = inkyMotionDelay + 1
 pacmanMotionDelay       = clydeMotionDelay + 1
 fontHeight              ds 1        ; used by 6 digit kernel (i.e. score display)
 ;--------------------------------------
-object1Sprite           = fontHeight; used in kernel to hold GRP1 graphics data
+tmpObjectGraphicData_01 = fontHeight; used in kernel to hold GRP1 graphics data
 ;--------------------------------------
-blinkEnergizerOnValue   = object1Sprite; holds value for blinking energizers (temporary)
+blinkEnergizerOnValue   = tmpObjectGraphicData_01; holds value for blinking energizers (temporary)
 ;--------------------------------------
 monsterAnimationFrame   = blinkEnergizerOnValue
 digitHundredthsGraphic  ds 1        ; graphic holder for 6-digit display
@@ -800,9 +800,6 @@ fruitColor              = clydeColor + 1
 pacmanColor             = fruitColor + 1
 eatenMonsterNumber      ds 1
 energizerValues         ds 1        ; energizer timer
-attackTimer             ds 1        ; timer for monster attack/retreat mode
-;--------------------------------------
-pacmanDeathDelay        = attackTimer
 frameCount              ds 1        ; frame counter (updated each frame)
 fruitTimer              ds 1        ; using a byte of RAM saves ~15 bytes of ROM
 dotEatingTimer          ds 1
@@ -865,6 +862,9 @@ gameBoardState          ds 1        ; dDccfggg
                                     ; c = Cruise Elroy state
                                     ; f = fruit shown
                                     ; g = monsters eaten - can't go over 4
+attackTimer             ds 1        ; timer for monster attack/retreat mode
+;--------------------------------------
+pacmanDeathDelay        = attackTimer
 random                  ds 1
 gameLevel               ds 1        ; current game level (wraps at 256)
 gameState               ds 1        ; Srnxxsss
@@ -880,14 +880,14 @@ maxDistance             ds 1        ; temporarily used to determining monster di
 
 objectOffsetValues      ds 6
 ;--------------------------------------
-object0OffsetValues     = objectOffsetValues
+objectOffsetValues_00   = objectOffsetValues
 ;--------------------------------------
-blinkyOffsetValue       = object0OffsetValues
+blinkyOffsetValue       = objectOffsetValues_00
 pinkyOffsetValue        = blinkyOffsetValue + 1
 inkyOffsetValue         = pinkyOffsetValue + 1
-object1OffsetValues     = inkyOffsetValue + 1
+objectOffsetValues_01   = inkyOffsetValue + 1
 ;--------------------------------------
-clydeOffsetValue        = object1OffsetValues
+clydeOffsetValue        = objectOffsetValues_01
 ;--------------------------------------
 targetVertPos           = clydeOffsetValue
 fruitOffsetValue        = clydeOffsetValue + 1
@@ -900,14 +900,14 @@ targetHorizPos          = pacmanOffsetValue
 joystickDirectionMask   = targetHorizPos
 objectMSBValues         ds 6
 ;--------------------------------------
-object0MSBValues        = objectMSBValues
+objectMSBValues_00      = objectMSBValues
 ;--------------------------------------
-blinkyMSBValue          = object0MSBValues
+blinkyMSBValue          = objectMSBValues_00
 pinkyMSBValue           = blinkyMSBValue + 1
 inkyMSBValue            = pinkyMSBValue + 1
-object1MSBValues        = inkyMSBValue + 1
+objectMSBValues_01      = inkyMSBValue + 1
 ;--------------------------------------
-clydeMSBValue           = object1MSBValues
+clydeMSBValue           = objectMSBValues_01
 fruitMSBValue           = clydeMSBValue + 1
 pacmanMSBValue          = fruitMSBValue + 1
 objectId                ds 1        ; id of current object...for kernel
@@ -929,8 +929,8 @@ fruitGraphicPointer     ds 2
 
    .org fruitGraphicPointer
 
-objectOffset            ds 1
-object1Offset           ds 1
+tmpObjectOffsetValue_00 ds 1
+tmpObjectOffsetValue_01 ds 1
 kernelSection           ds 1
 
 ;===============================================================================
@@ -1385,8 +1385,11 @@ MonsterAnimationTable
 ; but it saves ~8 bytes
 ;
 MonsterStaticTargetHorizPos
-   .byte BLINKY_HOME_HORIZ, PINKY_HOME_HORIZ, INKY_HOME_HORIZ
-   .byte CLYDE_HOME_HORIZ, CHAMBER_HOME_HORIZ
+   .byte BLINKY_HOME_HORIZ
+   .byte PINKY_HOME_HORIZ
+   .byte INKY_HOME_HORIZ
+   .byte CLYDE_HOME_HORIZ
+   .byte CHAMBER_HOME_HORIZ
 ;
 ; second frame animation
 ;
@@ -1441,10 +1444,10 @@ RemoveObjects
    rts
 
 ReverseDirToJoystickValueTable
-   .byte ~MY_MOVE_DOWN & P0_JOYSTICK_MASK
-   .byte ~MY_MOVE_LEFT & P0_JOYSTICK_MASK
-   .byte ~MY_MOVE_UP & P0_JOYSTICK_MASK
-   .byte ~MY_MOVE_RIGHT & P0_JOYSTICK_MASK
+   .byte ~[MY_MOVE_DOWN & P0_JOYSTICK_MASK]
+   .byte ~[MY_MOVE_LEFT & P0_JOYSTICK_MASK]
+   .byte ~[MY_MOVE_UP & P0_JOYSTICK_MASK]
+   .byte ~[MY_MOVE_RIGHT & P0_JOYSTICK_MASK]
 
 MonsterBlueAnimationTable
    .byte <[MonstersBlue_00 - H_KERNEL]
@@ -1482,12 +1485,18 @@ MonsterLowScoreTable
 ; MonsterLowScoreTable shared with values below...
 ;
 FruitLowScoreTable
-   .byte [CHERRIES_SCORE & $0F], [STRAWBERRY_SCORE & $0F]
-;   .byte [PEACH_SCORE & $0F], [PEACH_SCORE & $0F]
-;   .byte [APPLE_SCORE & $0F], [APPLE_SCORE & $0F]
-;   .byte [GRAPE_SCORE & $0F], [GRAPE_SCORE & $0F]
-;   .byte [FLAGSHIP_SCORE & $0F], [FLAGSHIP_SCORE & $0F]
-;   .byte [MUSH_SCORE & $0F], [MUSH_SCORE & $0F]
+   .byte [CHERRIES_SCORE & $0F]
+   .byte [STRAWBERRY_SCORE & $0F]
+;   .byte [PEACH_SCORE & $0F]
+;   .byte [PEACH_SCORE & $0F]
+;   .byte [APPLE_SCORE & $0F]
+;   .byte [APPLE_SCORE & $0F]
+;   .byte [GRAPE_SCORE & $0F]
+;   .byte [GRAPE_SCORE & $0F]
+;   .byte [FLAGSHIP_SCORE & $0F]
+;   .byte [FLAGSHIP_SCORE & $0F]
+;   .byte [MUSH_SCORE & $0F]
+;   .byte [MUSH_SCORE & $0F]
 ;   .byte [KEY_SCORE & $0F]
 
 ;
@@ -1617,16 +1626,16 @@ MazeLoop
    cpx #PEN_DOOR_SCANLINE - 1 ; 2         minus 1 because kernelSection reduced
    php                        ; 3 = @27   push to enable/diable ball VDEL'd
    lda #H_OBJECTS - 1         ; 2
-   dcp object1Offset          ; 5 = @34
-   bcs .storePlayer1Sprite_02 ; 2
-   lda #0                     ; 2
+   dcp tmpObjectOffsetValue_01; 5 = @34   decrement offset and compare with height
+   bcs .storePlayer1Sprite_02 ; 2         branch if in sprite height range
+   lda #0                     ; 2         clear sprite data this scan line
    NOP_W                      ; -1
 .storePlayer1Sprite_02
    lda (object1GraphicPtr),y  ; 5
-   dey                        ; 2
-   sta object1Sprite          ; 3 = @47
+   dey                        ; 2         decrement scan line
+   sta tmpObjectGraphicData_01; 3 = @47   temporarily store graphic data
    lda #H_OBJECTS - 1         ; 2
-   dcp objectOffset           ; 5 = @54
+   dcp tmpObjectOffsetValue_00; 5 = @54   decrement offset and compare with height
    lda mazeDots,x             ; 4         get left dot values for kernel section
    tax                        ; 2
    and #PF2_DOT_MASK          ; 2         keep the PF2 dot value
@@ -1638,7 +1647,7 @@ MazeLoop
    and #PF0_DOT_MASK          ; 2         keep the PF0 dot value
 ;--------------------------------------   dot kernel
    sta PF0                    ; 3 = @03   draw dot pattern for left PF0
-   lda object1Sprite          ; 3
+   lda tmpObjectGraphicData_01; 3
    sta GRP1                   ; 3 = @09
    lda #DOT_COLOR             ; 2
    sta COLUPF                 ; 3 = @14   <= 30...OKAY
@@ -1649,8 +1658,8 @@ JumpIntoKernel SUBROUTINE
    tax                        ; 2
    and #PF0_DOT_MASK          ; 2         keep the PF0 dot value
    sta PF0                    ; 3 = @30   draw dot pattern for right PF0
-   bcs .drawPlayer0_00        ; 2
-   lda #0                     ; 2
+   bcs .drawPlayer0_00        ; 2         branch if in sprite height range
+   lda #0                     ; 2         clear sprite data this scan line
    NOP_W                      ; -1
 .drawPlayer0_00
    lda (objectGraphicPtr),y   ; 5
@@ -1664,15 +1673,15 @@ JumpIntoKernel SUBROUTINE
    sta ENABL                  ; 3 = @58   D1 = 0 from PF1_DOT_MASK :-)
    ldx kernelSection          ; 3
    lda #H_OBJECTS - 1         ; 2
-   dcp object1Offset          ; 5
+   dcp tmpObjectOffsetValue_01; 5         decrement offset and compare with height
    lda mazeColor              ; 3
    sta COLUPF                 ; 3 = @74
 ;--------------------------------------   first line of maze
    lda MazePF0Data_00,x       ; 4 = @02
    and #PF0_WALL_MASK         ; 2
    sta PF0                    ; 3 = @07
-   bcs .drawPlayer1_00        ; 2
-   lda #0                     ; 2
+   bcs .drawPlayer1_00        ; 2         branch if in sprite height range
+   lda #0                     ; 2         clear sprite data this scan line
    NOP_W                      ; -1
 .drawPlayer1_00
    lda (object1GraphicPtr),y  ; 5
@@ -1683,47 +1692,47 @@ JumpIntoKernel SUBROUTINE
    sta PF2                    ; 3 = @32   < 38
    dey                        ; 2
    lda #H_OBJECTS - 1         ; 2
-   dcp objectOffset           ; 5
-   bcs .drawPlayer0_01        ; 2
-   lda #0                     ; 2
+   dcp tmpObjectOffsetValue_00; 5         decrement offset and compare with height
+   bcs .drawPlayer0_01        ; 2         branch if in sprite height range
+   lda #0                     ; 2         clear sprite data this scan line
    NOP_W                      ; -1
 .drawPlayer0_01
    lda (objectGraphicPtr),y   ; 5
    sta GRP0                   ; 3 = @52   draw object for 2nd line of kernel
    lda #H_OBJECTS - 1         ; 2
-   dcp object1Offset          ; 5 = @59
+   dcp tmpObjectOffsetValue_01; 5 = @59   decrement offset and compare with height
    lda MazePF2Data_01,x       ; 4
    sta PF2                    ; 3 = @66
    lda MazePF1Data_01,x       ; 4
    sta PF1                    ; 3 = @73
-   bcs .drawPlayer1_01        ; 2
+   bcs .drawPlayer1_01        ; 2         branch if in sprite height range
 ;--------------------------------------   second line of maze
-   lda #0                     ; 2 = @01
+   lda #0                     ; 2 = @01   clear sprite data this scan line
    NOP_W                      ; -1
 .drawPlayer1_01
    lda (object1GraphicPtr),y  ; 5 = @05
    sta GRP1                   ; 3 = @08
    dey                        ; 2
    lda #H_OBJECTS - 1         ; 2
-   dcp objectOffset           ; 5
-   bcs .drawPlayer0_02        ; 2
-   lda #0                     ; 2
+   dcp tmpObjectOffsetValue_00; 5         decrement offset and compare with height
+   bcs .drawPlayer0_02        ; 2         branch if in sprite height range
+   lda #0                     ; 2         clear sprite data this scan line
    NOP_W                      ; -1
 .drawPlayer0_02
    lda (objectGraphicPtr),y   ; 5
    sta GRP0                   ; 3 = @28   draw object for 3rd line of kernel
    lda #H_OBJECTS - 1         ; 2
-   dcp object1Offset          ; 5 = @35
-   bcs .storePlayer1Sprite_02 ; 2
-   lda #0                     ; 2
+   dcp tmpObjectOffsetValue_01; 5 = @35   decrement offset and compare with height
+   bcs .storePlayer1Sprite_02 ; 2         branch if in sprite height range
+   lda #0                     ; 2         clear sprite data this scan line
    NOP_W                      ; -1
 .storePlayer1Sprite_02
    lda (object1GraphicPtr),y  ; 5
-   sta object1Sprite          ; 3 = @46
+   sta tmpObjectGraphicData_01; 3 = @46
    dey                        ; 2         reduce scan line for 3rd line of maze
    pla                        ; 4         point to stack to ENABL for door
    lda #H_OBJECTS - 1         ; 2
-   dcp objectOffset           ; 5
+   dcp tmpObjectOffsetValue_00; 5         decrement offset and compare with height
 ; ------------------ Maze PF Timings ------------------
 ; | PF0 |   PF1   |   PF2   |   PF2   |   PF1   | PF0 |
 ; |22.??|27 ..  ??|38 ..  ??|48 ..  ??|59 ..  67|70.??|
@@ -1735,18 +1744,18 @@ JumpIntoKernel SUBROUTINE
    lda MazePF0Data_02,x       ; 4 = @01
    and #PF0_WALL_MASK         ; 2
    sta PF0                    ; 3 = @06
-   lda object1Sprite          ; 3
+   lda tmpObjectGraphicData_01; 3
    sta GRP1                   ; 3 = @12
-   bcs .drawPlayer0_03        ; 2
-   lda #0                     ; 2
+   bcs .drawPlayer0_03        ; 2         branch if in sprite height range
+   lda #0                     ; 2         clear sprite data this scan line
    NOP_W                      ; -1
 .drawPlayer0_03
    lda (objectGraphicPtr),y   ; 5
    sta GRP0                   ; 3 = @23   draw object for 4th line of kernel
    lda #H_OBJECTS - 1         ; 2
-   dcp object1Offset          ; 5 = @30
-   bcs .storePlayer1InSection ; 2
-   lda #0                     ; 2
+   dcp tmpObjectOffsetValue_01; 5 = @30   decrement offset and compare with height
+   bcs .storePlayer1InSection ; 2         branch if in sprite height range
+   lda #0                     ; 2         clear sprite data this scan line
    NOP_W                      ; -1
 .storePlayer1InSection
    lda (object1GraphicPtr),y  ; 5
@@ -1755,9 +1764,9 @@ JumpIntoKernel SUBROUTINE
 ;--------------------------------------   fourth line of maze
    sta GRP1                   ; 3 = @03
    lda #H_OBJECTS - 1         ; 2
-   dcp objectOffset           ; 5
-   bcs .drawPlayer0_04        ; 2
-   lda #0                     ; 2
+   dcp tmpObjectOffsetValue_00; 5         decrement offset and compare with height
+   bcs .drawPlayer0_04        ; 2         branch if in sprite height range
+   lda #0                     ; 2         clear sprite data this scan line
    NOP_W                      ; -1
 .drawPlayer0_04
    lda (objectGraphicPtr),y   ; 5
@@ -1765,36 +1774,36 @@ JumpIntoKernel SUBROUTINE
    lda #H_OBJECTS - 1         ; 2
    sta WSYNC
 ;--------------------------------------   fifth line of maze
-   dcp object1Offset          ; 5 = @05
-   bcs .drawPlayer1_05        ; 2
-   lda #0                     ; 2
+   dcp tmpObjectOffsetValue_01; 5 = @05   decrement offset and compare with height
+   bcs .drawPlayer1_05        ; 2         branch if in sprite height range
+   lda #0                     ; 2         clear sprite data this scan line
    NOP_W                      ; -1
 .drawPlayer1_05
    lda (object1GraphicPtr),y  ; 5
    sta GRP1                   ; 3 = @16
    dey                        ; 2
    lda #H_OBJECTS - 1         ; 2
-   dcp objectOffset           ; 5
-   bcs .drawPlayer0_05        ; 2
-   lda #0                     ; 2
+   dcp tmpObjectOffsetValue_00; 5         decrement offset and compare with height
+   bcs .drawPlayer0_05        ; 2         branch if in sprite height range
+   lda #0                     ; 2         clear sprite data this scan line
    NOP_W                      ; -1
 .drawPlayer0_05
    lda (objectGraphicPtr),y   ; 5
    sta GRP0                   ; 3 = @36   draw object for 6th line of kernel
    SLEEP_5                    ; 5
    lda #H_OBJECTS - 1         ; 2
-   dcp object1Offset          ; 5
-   bcs .drawPlayer1           ; 2
-   lda #0                     ; 2
+   dcp tmpObjectOffsetValue_01; 5         decrement offset and compare with height
+   bcs .drawPlayer1           ; 2         branch if in sprite height range
+   lda #0                     ; 2         clear sprite data this scan line
    NOP_W                      ; -1
 .drawPlayer1
    lda (object1GraphicPtr),y  ; 5
-   sta object1Sprite          ; 3 = @59
+   sta tmpObjectGraphicData_01; 3 = @59
    lda MazePF2Data_03,x       ; 4
    sta PF2                    ; 3 = @66
    lda MazePF1Data_03,x       ; 4
    sta PF1                    ; 3 = @73
-   lda object1Sprite          ; 3
+   lda tmpObjectGraphicData_01; 3
 ;--------------------------------------   sixth line of maze
    sta GRP1                   ; 3 = @03
    lda MazePF0Data_03,x       ; 4
@@ -1802,33 +1811,33 @@ JumpIntoKernel SUBROUTINE
    sta PF0                    ; 3 = @12
    dey                        ; 2
    lda #H_OBJECTS - 1         ; 2
-   dcp objectOffset           ; 5
-   bcs .drawPlayer0_06        ; 2
-   lda #0                     ; 2
+   dcp tmpObjectOffsetValue_00; 5         decrement offset and compare with height
+   bcs .drawPlayer0_06        ; 2         branch if in sprite height range
+   lda #0                     ; 2         clear sprite data this scan line
    NOP_W                      ; -1
 .drawPlayer0_06
    lda (objectGraphicPtr),y   ; 5
    sta GRP0                   ; 3 = @32   draw object for 7th line of kernel
    lda #H_OBJECTS - 1         ; 2
-   dcp object1Offset          ; 5
-   bcs .storePlayer1Sprite_01 ; 2
-   lda #0                     ; 2
+   dcp tmpObjectOffsetValue_01; 5         decrement offset and compare with height
+   bcs .storePlayer1Sprite_01 ; 2         branch if in sprite height range
+   lda #0                     ; 2         clear sprite data this scan line
    NOP_W                      ; -1
 .storePlayer1Sprite_01
    lda (object1GraphicPtr),y  ; 5
-   sta object1Sprite          ; 3 = @50
+   sta tmpObjectGraphicData_01; 3 = @50
    dey                        ; 2
    lda #H_OBJECTS - 1         ; 2         prepare logic to draw player 0 on
-   dcp objectOffset           ; 5         next scan line since we have time
+   dcp tmpObjectOffsetValue_00; 5         next scan line since we have time
    lda MazePF2Data_04,x       ; 4
    sta PF2                    ; 3 = @66   > 59...OKAY
    lda MazePF1Data_04,x       ; 4
    sta PF1                    ; 3 = @73   > 67...OKAY
-   lda object1Sprite          ; 3
+   lda tmpObjectGraphicData_01; 3
 ;--------------------------------------   seventh line of maze
    sta GRP1                   ; 3 = @01
-   bcs .drawPlayer0_07        ; 2
-   lda #0                     ; 2
+   bcs .drawPlayer0_07        ; 2         branch if in sprite height range
+   lda #0                     ; 2         clear sprite data this scan line
    NOP_W                      ; -1
 .drawPlayer0_07
    lda (objectGraphicPtr),y   ; 5
@@ -1869,10 +1878,10 @@ GameInitialization
    jmp .setToDemoMode               ; set game to DEMO_MODE
 
 MonsterHighScoreTable
-   .byte FIRST_MONSTER_VALUE >> 8
-   .byte SECOND_MONSTER_VALUE >> 8
-   .byte THIRD_MONSTER_VALUE >> 8
-   .byte FOURTH_MONSTER_VALUE >> 8
+   .byte [FIRST_MONSTER_VALUE >> 8]
+   .byte [SECOND_MONSTER_VALUE >> 8]
+   .byte [THIRD_MONSTER_VALUE >> 8]
+   .byte [FOURTH_MONSTER_VALUE >> 8]
 
 EnergizerRAMLocations
    .byte NE_ENERGIZER_RAM_PTR, NW_ENERGIZER_RAM_PTR
@@ -2071,6 +2080,17 @@ MainLoop
 ; game calculations before the next frame is drawn
 ;
 Overscan
+   inc frameCount                   ; frame count is update every frame
+   bne .setCurrentObjectId
+   lda playerState                  ; get current player state
+   and #<~START_GAME_MUSIC          ; clear the START_GAME_MUSIC flag
+   sta playerState
+.setCurrentObjectId
+   dec objectId                     ; reduce object id
+   bpl .skipObjectWrap              ; branch if not time to roll over value
+   ldx #2                           ; wrap object id to maximum value
+   stx objectId
+.skipObjectWrap
    lda #OVERSCAN_TIME               ; get value for the overscan wait time
    sta WSYNC                        ; end the last scanline
    sty VBLANK                       ; turn off TIA (D1 = 1)
@@ -2080,7 +2100,7 @@ Overscan
 ;
 ; Center players on screen for 48-pixel display kernel.
 ;
-   ldx #HMOVE_R5 | THREE_COPIES | VERTICAL_DELAY
+   ldx #[HMOVE_R5 | THREE_COPIES | VERTICAL_DELAY]
    stx HMBL
    stx NUSIZ0                       ; 3 copies of GRP0 close (D1 and D0 = 1)
    stx NUSIZ1                       ; 3 copies of GRP1 close (D1 and D0 = 1)
@@ -2127,26 +2147,27 @@ CheckEnergizerValues
 
 ;---------------------------------------------------------------CheckAttactTimer
 ;
-; Increment the attack timer approxiately every second. I used a chart from
-; http://www.webpacman.com/ for this behavior. The monsters start out in scatter
-; mode and will stay there for ~9 seconds. After that the monsters will start to
-; chase Pac-man for ~20 seconds. Then they will return to scatter mode. This is
-; done 7 times and then the monsters stay in attack mode.
+; Increment the attack timer approxiately every second. The monsters start out
+; in scatter mode and will stay there for ~9 seconds. After that the monsters
+; will start to chase Pac-man for ~17 seconds. Then they will return to scatter
+; mode. This is done 7 times and then the monsters stay in attack mode.
 ;
 CheckAttactTimer
    bit playerState                  ; check current player state
    bmi .doneCheckAttackTimer        ; branch if in death sequence
    bvs PlayGameStartTune            ; branch if starting a new game
+   bit gameState                    ; check the current game state
+   bmi .doneCheckAttackTimer        ; branch if pausing for new level
    lda frameSecondCount             ; get frame second count
    ora energizerValues              ; or in energizer values
    bne .doneCheckAttackTimer        ; skip check if not time
    lax attackTimer                  ; get attack timer value
    and #ATTACK_COUNTER_MASK         ; keep the attack counter
-   cmp #(7 << 5)
+   cmp #[7 << 5]
    bcs .doneCheckAttackTimer        ; branch if done 7 times
-   bit gameState                    ; check the current game state
    txa                              ; move attack timer to accumulator
    and #ATTACK_TIMER                ; keep ATTACK_TIMER value
+   beq .resetAttackTimerValue
    bvc .monstersNotReturningHome    ; branch if RETURN_HOME flag clear
    cmp #ATTACK_TIMER_VALUE - 10
 .monstersNotReturningHome
@@ -2154,7 +2175,8 @@ CheckAttactTimer
 .resetAttackTimerValue
    txa                              ; move attack timer to accumulator
    and #<~ATTACK_TIMER              ; clear attack timer value
-   adc #((1 << 5) + ATTACK_TIMER_VALUE) - 1;increment number of times done...carry set
+   clc
+   adc #([1 << 5] | ATTACK_TIMER_VALUE);increment number of times done
    sta attackTimer                  ; set new attack timer value
    lda gameState                    ; get current game state
    and #<~NEW_LEVEL                 ; clear the NEW_LEVEL flag
@@ -2174,7 +2196,7 @@ PlayGameSounds
    bit gameState
    bmi .reduceLevelPauseTimer       ; branch if pausing for a new level
    lda gameBoardState               ; get the current game board state
-   and #GAME_BOARD_DONE | DEMO_MODE ; keep D7 and D6
+   and #[GAME_BOARD_DONE | DEMO_MODE];keep D7 and D6
    bne .reduceLevelPauseTimer       ; skip game sounds if level done or in DEMO_MODE
 .playPacmanSounds
    bit playerState                  ; check current player state
@@ -2313,7 +2335,7 @@ PlayGameStartTune
    lda frameCount                   ; get the current frame count
    asr #15                          ; make value 0 <= a <= 15 and divide value by 2
    bcs .playEyeSound                ; play retreat sound on odd frames
-   lda #<-(11 - 1)                  ; turn off retreat sound on even frames
+   lda #<-[11 - 1]                  ; turn off retreat sound on even frames
 .playEyeSound
    adc #11 - 1                      ; increment value by 11 (i.e. carry set)
 .setBonusSoundAttributes
@@ -2340,14 +2362,14 @@ PlayGameStartTune
    lda #4
    sta AUDC1                        ; set siren sound channel
    ldx dotsRemaining                ; get number of dots remaining
-   cpx #MAX_NUM_DOTS - 73 + 1
+   cpx #[MAX_NUM_DOTS - 73] + 1
    bcs .setSirenSound
    iny                              ; y = 1
-   cpx #MAX_NUM_DOTS - 114 + 1
+   cpx #[MAX_NUM_DOTS - 114] + 1
    bcs .setSirenSound
    iny                              ; y = 2
    lda #CRUISE_ELROY1_STATE
-   cpx #MAX_NUM_DOTS - 134 + 1
+   cpx #[MAX_NUM_DOTS - 134] + 1
    bcs .setBlinkyCruiseElroyState
    iny                              ; y = 3
    ora #CRUISE_ELROY2_STATE         ; set Blinky to CRUISE_ELROY2_STATE
@@ -2410,7 +2432,7 @@ CheckConsoleSwitches
 .changeGameSelection
    inc gameState                    ; increment game state (i.e. game selection)
    lda gameState                    ; get current game state
-   and #NEW_LEVEL_PAUSE | RETURN_HOME | NEW_LEVEL | LEVEL_SELECTION_MASK
+   and #[NEW_LEVEL_PAUSE | RETURN_HOME | NEW_LEVEL | LEVEL_SELECTION_MASK]
    sta gameState                    ; wrap game selection if needed
 .endConsoleSwitchCheck
 
@@ -2447,7 +2469,7 @@ SetToDemoMode
    stx gameLevel                    ; set game level back to CHERRY_LEVEL (i.e. x = 0)
    jsr NewLevel
    lda playerState                  ; get current player state
-   and #<~(LIVES_MASK | START_GAME_MUSIC);clear number of lives and turn off start up
+   and #<~[LIVES_MASK | START_GAME_MUSIC];clear number of lives and turn off start up
    sta playerState                  ; music for game start up
    lda #DEMO_MODE
    sta gameBoardState               ; place game in DEMO_MODE
@@ -2533,7 +2555,7 @@ MovePacman
    bne .determinePacmanMotionDelayIndex;branch to bypass movement pause if ate fruit
    lda gameBoardState               ; check current game board state
    ora playerState                  ; or in current player state
-   and #GAME_BOARD_DONE | DEATH_SEQUENCE;keep D7
+   and #[GAME_BOARD_DONE | DEATH_SEQUENCE];keep D7
    ora eatingMonsterSoundIndex
    bne .donePacmanMove              ; branch if level done or Pac-man caught
 .determinePacmanMotionDelayIndex
@@ -2753,7 +2775,7 @@ CheckForEatingDots
    bcs .bcsDoneEatingDots           ; skip processing if out of range
    cmp #PACMAN_START_X - 2
    bcc .pacmanOnLeftSide
-   cmp #PACMAN_START_X - 2 + 12
+   cmp #[PACMAN_START_X - 2] + 12
    bcc .bccDoneEatingDots
 .pacmanOnRightSide
    sbc #33 - 8                      ; carry set -- subtract right min value
@@ -2765,7 +2787,7 @@ CheckForEatingDots
    bcc .skipLeftSideProcessing      ; unconditional branch
 
 .pacmanOnLeftSide
-   sbc #DOT_SECTIONS  - 8           ; carry clear here -- subtract min x value
+   sbc #DOT_SECTIONS - 8            ; carry clear here -- subtract min x value
    bcc .bccDoneEatingDots           ; done eating dots if out of range
 .skipLeftSideProcessing
    tay                              ; move to y temporarily
@@ -2959,7 +2981,7 @@ SetObjectKernelValues
 
 .setMonsterToBlue
    lda energizerValues              ; get energizer value
-   cmp #(5 << 4)                    ; monsters to blink 5 times
+   cmp #[5 << 4]                    ; monsters to blink 5 times
    bcs .dontBlinkMonsters
    and #8
    bne .setMonsterEyeColor
@@ -3028,17 +3050,6 @@ VerticalSync SUBROUTINE
    ldx #VBLANK_TIME                 ; used to set timer for vertical blanking period
    VERTICAL_SYNC                    ; vertical sync macro
    stx TIM64T                       ; set timer for vertical blank wait
-   inc frameCount                   ; frame count is update every frame
-   bne .setCurrentObjectId
-   lda playerState                  ; get current player state
-   and #<~START_GAME_MUSIC          ; clear the START_GAME_MUSIC flag
-   sta playerState
-.setCurrentObjectId
-   dec objectId                     ; reduce object id
-   bpl .skipObjectWrap              ; branch if not time to roll over value
-   ldx #2                           ; wrap object id to maximum value
-   stx objectId
-.skipObjectWrap
    sty GRP0                         ; clear player graphic data from kernel execution
    sty GRP1
    lda gameBoardState               ; get the current game board state
@@ -3071,18 +3082,19 @@ MoveMonsters
    ldx #NUM_MONSTERS - 1
 .moveMonsterLoop
    lda playerState                  ; get the current player state
-   bmi .bneCheckNextMonster         ; branch if in death sequence (don't move monsters)
+   and #[DEATH_SEQUENCE | START_GAME_MUSIC]
+   bne .bneCheckNextMonster         ; branch if not time to move monsters
    lda monsterAttributes,x          ; get monster's attributes
    sta tempMonsterAttribute
    asl                              ; shift EYE_STATE to D7
    bmi .determineMonsterAllowedMotion; branch if monster in EYE_STATE
-   and #RELEASE_TIME << 1           ; keep monster release time
-   cmp #((1 << 2) + 1) << 1
+   and #[RELEASE_TIME << 1]         ; keep monster release time
+   cmp #([1 << 2] + 1) << 1
    bcc .skipReleaseTimeReduction    ; branch if monster leaving pen or not in pen
    lda frameSecondCount             ; get current frame seconds count
    bne .skipReleaseTimeReduction
    lda monsterAttributes,x          ; get monster's attributes
-   sbc #(1 << 2)                    ; reduce release time by 1...carry set
+   sbc #[1 << 2]                    ; reduce release time by 1...carry set
    sta monsterAttributes,x
 .skipReleaseTimeReduction
 .determineToMoveMonster
@@ -3109,9 +3121,9 @@ MoveMonsters
    cmp #92
    bne .monsterNotInTunnel          ; branch if monster not in tunnel
    lda monsterHorizPos,x
-   cmp #46 - 1 - 8
+   cmp #46 - 9
    bcc .determineMonsterFrameDelay
-   cmp #130 - 1 - 8
+   cmp #130 - 9
    bcs .determineMonsterFrameDelay  ; branch if monster in tunnel
 .monsterNotInTunnel
    iny                              ; increment for SPEED_MONSTER_NORMAL
@@ -3352,24 +3364,24 @@ DrawIt
    sec                        ; 2
    sbc object0VertPos,x       ; 4
    adc #H_OBJECTS - 2         ; 2         subtract 2 because this player is VDEL'd
-   sta object0OffsetValues,x  ; 4
+   sta objectOffsetValues_00,x; 4
    adc objectGraphicLSB,x     ; 4
    sta object0LSBValues,x     ; 4 = @20
    lda #H_KERNEL              ; 2
    sec                        ; 2
    sbc object1VertPos,x       ; 4
    adc #H_OBJECTS - 1         ; 2
-   sta object1OffsetValues,x  ; 4
+   sta objectOffsetValues_01,x; 4
    adc object1GraphicLSB,x    ; 4
    cpx #1                     ; 2         set carry if object is Pac-man or the fruit
    sbc #1 - 1                 ; 2         so subtracts 1 if the object is Clyde
    sta object1LSBValues,x     ; 4
-   lda object1MSBValues,x     ; 4         set object graphic pointer data
+   lda objectMSBValues_01,x   ; 4         set object graphic pointer data
    sta object1GraphicPtr + 1  ; 3 = @53
    lda object1LSBValues,x     ; 4
    sta object1GraphicPtr      ; 3 = @60
-   lda object1OffsetValues,x  ; 4
-   sta object1Offset          ; 3 = @67   set object offset value
+   lda objectOffsetValues_01,x; 4
+   sta tmpObjectOffsetValue_01; 3 = @67   set object offset value
    lda object1Colors,x        ; 4         read color value for object
    sta WSYNC
 ;--------------------------------------
@@ -3377,16 +3389,16 @@ DrawIt
    sta COLUP1                 ; 3 = @06   set object color
    lda object0Colors,x        ; 4         read color value for object
    sta COLUP0                 ; 3 = @13   set object color
-   lda object0MSBValues,x     ; 4         set object graphic pointer data
+   lda objectMSBValues_00,x   ; 4         set object graphic pointer data
    sta objectGraphicPtr + 1   ; 3
    lda object0LSBValues,x     ; 4
    sta objectGraphicPtr       ; 3
-   lda object0OffsetValues,x  ; 4
+   lda objectOffsetValues_00,x; 4
    ldx #<[ENABL - 1]          ; 2
    txs                        ; 2         set stack to ENABL for chamber door
    sta WSYNC
 ;--------------------------------------
-   sta objectOffset           ; 3         set object offset value
+   sta tmpObjectOffsetValue_00; 3         set object offset value
    sty NUSIZ0                 ; 3 = @06   set to show ONE_COPY of the players
    sty NUSIZ1                 ; 3 = @09
    tya                        ; 2         set accumulator to 0 (i.e. y = 0)
@@ -3399,7 +3411,7 @@ DrawIt
 ;---------------------------------------------------------------MoveMonsterInPen
 ;
 MoveMonsterInPen
-   cmp #(1 << 2) << 1
+   cmp #[1 << 2] << 1
    beq .moveMonsterOutOfPen         ; move out of pen if release time reached 1
    lsr
    lsr
@@ -3413,7 +3425,7 @@ MoveMonsterInPen
    cmp #INKY_START_Y
    bcc .moveMonsterUpInPen
 .moveMonsterDownInPen
-   ldy #MY_MOVE_DOWN >> 4
+   ldy #[MY_MOVE_DOWN >> 4]
    rts
    
 .moveMonsterOutOfPen
@@ -3428,9 +3440,9 @@ MoveMonsterInPen
    and #<~RELEASE_TIME              ; clear RELEASE_TIME as monster is out of pen
    sta monsterAttributes,x
 .moveMonsterInPen
-   ldy #MY_MOVE_RIGHT >> 4          ; assume monster will move right to center of pen
+   ldy #[MY_MOVE_RIGHT >> 4]        ; assume monster will move right to center of pen
    bcc .moveMonsterRightInPen
-   ldy #MY_MOVE_LEFT >> 4           ; assume monster will move left to center of pen
+   ldy #[MY_MOVE_LEFT >> 4]         ; assume monster will move left to center of pen
 .moveMonsterRightInPen
    rts
 
@@ -3449,10 +3461,10 @@ MoveMonsterInPen
 .reinstateMonster
    lda monsterAttributes,x          ; get monster attributes
    and #<~EYE_STATE                 ; clear EYE_STATE
-   ora #(1 << 2)                    ; set to release now to avoid eye reversal bug
+   ora #[1 << 2]                    ; set to release now to avoid eye reversal bug
    sta monsterAttributes,x
 .moveMonsterUpInPen
-   ldy #MY_MOVE_UP >> 4
+   ldy #[MY_MOVE_UP >> 4]
    rts
 
 ;----------------------------------------------------------------------MonsterAI
@@ -3501,7 +3513,7 @@ MonsterAI
    lda monsterAttributes,x          ; get monster attributes
    asl                              ; shift EYE_STATE to D7
    bmi .returnEyesToChamber
-   and #(RELEASE_TIME << 1)         ; keep monster release time
+   and #[RELEASE_TIME << 1]         ; keep monster release time
    bne MoveMonsterInPen             ; branch if monster in pen
    bcs .blueMonsterAI               ; branch if monster blue
 .skipMoveMonsterInPen
@@ -3635,7 +3647,7 @@ DetermineMonsterNewDirection
    ror                              ; shift right to compare with carry bit
 .checkToMoveMonsterDown
    sta  maxDistance                 ; set the maximum distance value
-   ldy #MY_MOVE_RIGHT >> 4          ; assume monster will move right
+   ldy #[MY_MOVE_RIGHT >> 4]        ; assume monster will move right
    bit allowedMotion                ; check if monster allowed to move down
    bvc .checkToMoveMonsterLeft      ; branch if not allowed to move down
    lda objectVertPos,x              ; get monster's vertical position
@@ -3645,7 +3657,7 @@ DetermineMonsterNewDirection
    cmp maxDistance                  ; check with distance is greater
    bcc .checkToMoveMonsterLeft      ; branch if vertical distance is less than horizontal
    sta  maxDistance                 ; set current maximum distance value
-   ldy #MY_MOVE_DOWN >> 4           ; MY_MOVE_DOWN has better priority at the moment
+   ldy #[MY_MOVE_DOWN >> 4]         ; MY_MOVE_DOWN has better priority at the moment
 .checkToMoveMonsterLeft
    asl allowedMotion                ; shift MY_MOVE_LEFT to carry
    bcc .checkToMoveMonsterUp        ; branch if not allowed to move left
@@ -3655,7 +3667,7 @@ DetermineMonsterNewDirection
    cmp maxDistance                  ; check which distance is greater
    bcc .checkToMoveMonsterUp        ; branch if left distance is less
    sta  maxDistance                 ; set current maximum distance value
-   ldy #MY_MOVE_LEFT >> 4           ; MY_MOVE_LEFT has better priority at the moment
+   ldy #[MY_MOVE_LEFT >> 4]         ; MY_MOVE_LEFT has better priority at the moment
 .checkToMoveMonsterUp
    bit allowedMotion                ; check if monster allowed to move up
    bvc .doneDetermineNewDirection   ; branch if monster not allowed to move up
@@ -3676,6 +3688,9 @@ SetYRegisterToDiv8
    tay                              ; move value to y for table look up
 .doneDetermineNewDirection
    rts
+
+StartingScatterModeValue
+   .byte 7, 7, 5, 5
 
 ;
 ; NOTE: Monster animation sprites *MUST* reside on the same page. Their
@@ -3795,8 +3810,11 @@ SirenMaskTable
    .byte $10, $10, $08, $08
 
 MonsterStaticTargetVertPos
-   .byte BLINKY_HOME_VERT, PINKY_HOME_VERT, INKY_HOME_VERT
-   .byte CLYDE_HOME_VERT, CHAMBER_HOME_VERT
+   .byte BLINKY_HOME_VERT
+   .byte PINKY_HOME_VERT
+   .byte INKY_HOME_VERT
+   .byte CLYDE_HOME_VERT
+   .byte CHAMBER_HOME_VERT
 
 ;--------------------------------------------------------ReverseMonsterDirection
 ;
@@ -3821,28 +3839,28 @@ ReverseMonsterDirection
 ; that starting with the 7th key the monsters no longer have blue time.
 ;
 EnergizerTimeTable
-   .byte (6 * FPS) / 2              ; Cherries     6 sec
-   .byte (5 * FPS) / 2              ; Strawberry   5 sec
-   .byte (4 * FPS) / 2              ; 1st Peach    4 sec
-   .byte (3 * FPS) / 2              ; 2nd Peach    3 sec
-   .byte (2 * FPS) / 2              ; 1st Apple    2 sec
+   .byte [6 * FPS] / 2              ; Cherries     6 sec
+   .byte [5 * FPS] / 2              ; Strawberry   5 sec
+   .byte [4 * FPS] / 2              ; 1st Peach    4 sec
+   .byte [3 * FPS] / 2              ; 2nd Peach    3 sec
+   .byte [2 * FPS] / 2              ; 1st Apple    2 sec
 ;--------------------------------------
-   .byte (5 * FPS) / 2              ; 2nd Apple    5 sec
-   .byte (2 * FPS) / 2              ; 1st Grape    2 sec
-   .byte (2 * FPS) / 2              ; 2nd Grape    2 sec
-   .byte (1 * FPS) / 2              ; 1st Flagship 1 sec
+   .byte [5 * FPS] / 2              ; 2nd Apple    5 sec
+   .byte [2 * FPS] / 2              ; 1st Grape    2 sec
+   .byte [2 * FPS] / 2              ; 2nd Grape    2 sec
+   .byte [1 * FPS] / 2              ; 1st Flagship 1 sec
 ;--------------------------------------
-   .byte (5 * FPS) / 2              ; 2nd Flagship 5 sec
-   .byte (2 * FPS) / 2              ; 1st Mush     2 sec
-   .byte (1 * FPS) / 2              ; 2nd Mush     1 sec
-   .byte (1 * FPS) / 2              ; 1st Key      1 sec
+   .byte [5 * FPS] / 2              ; 2nd Flagship 5 sec
+   .byte [2 * FPS] / 2              ; 1st Mush     2 sec
+   .byte [1 * FPS] / 2              ; 2nd Mush     1 sec
+   .byte [1 * FPS] / 2              ; 1st Key      1 sec
 ;--------------------------------------
-   .byte (3 * FPS) / 2              ; 2nd Key      3 sec
-   .byte (1 * FPS) / 2              ; 3rd Key      1 sec
-   .byte (1 * FPS) / 2              ; 4th Key      1 sec
-   .byte (0 * FPS) / 2              ; 5th Key      0 sec
-   .byte (1 * FPS) / 2              ; 6th Key      1 sec
-   .byte (0 * FPS) / 2              ; 7th Key      0 sec
+   .byte [3 * FPS] / 2              ; 2nd Key      3 sec
+   .byte [1 * FPS] / 2              ; 3rd Key      1 sec
+   .byte [1 * FPS] / 2              ; 4th Key      1 sec
+   .byte [0 * FPS] / 2              ; 5th Key      0 sec
+   .byte [1 * FPS] / 2              ; 6th Key      1 sec
+   .byte [0 * FPS] / 2              ; 7th Key      0 sec
 
 FruitOffsetTable
    .byte <[Cherries - FruitSprites + H_OBJECTS]
@@ -3906,7 +3924,7 @@ RestartLevel
    sta CTRLPF
    tya                              ; move y to accumulator to determine if the dots
    beq .doneInitDotArray            ; should be re-initialized
-   ldx #(NUM_RAM_DOT_BYTES / 2)
+   ldx #[NUM_RAM_DOT_BYTES / 2]
 .storeDotPatterns
    lda ROMDotPatterns - 1,x
    sta mazeDots - 1,x
@@ -3942,11 +3960,18 @@ RestartLevel
    sta inkyAttributes
    lda ClydeStartAttributes,x
    sta clydeAttributes
+   lda StartingScatterModeValue,x
+   sta attackTimer
    rts
 
 FruitColorsTable
-   .byte CHERRIES_COLOR, PEACH_COLOR, APPLE_COLOR
-   .byte GRAPES_COLOR, FLAGSHIP_COLOR, MUSH_COLOR, KEY_COLOR
+   .byte CHERRIES_COLOR
+   .byte PEACH_COLOR
+   .byte APPLE_COLOR
+   .byte GRAPES_COLOR
+   .byte FLAGSHIP_COLOR
+   .byte MUSH_COLOR
+   .byte KEY_COLOR
 
 PacmanDelayTable
 ;
@@ -3975,7 +4000,6 @@ MonsterColorTable
    .byte PACMAN_COLOR               ; pacmanColor
    .byte -1                         ; eatenMonsterNumber
    .byte 0                          ; energizerValues
-   .byte ATTACK_TIMER_VALUE         ; attackTimer
    .byte 0                          ; frameCount
    .byte 0                          ; fruitTimer
    .byte <[EatingDotSoundFrequencyValues_END - EatingDotSoundFrequencyValues]; dotEatingTimer
@@ -3992,10 +4016,10 @@ MonsterColorTable
    .byte H_KERNEL + H_OBJECTS       ; fruitVertPos
    .byte PACMAN_START_Y             ; pacmanVertPos
    .byte DIRECTION_LEFT             ; blinkyAttributes
-   .byte (((1 * 12) / 7) << 2) | DIRECTION_UP; pinkyAttributes
+   .byte [1 << 2] | DIRECTION_UP    ; pinkyAttributes
    .byte 0, 0
    .byte #$3F                       ; levelPauseTimer
-   .byte ENERGIZER_VALUE_MASK | DIRECTION_LEFT; pacmanAttributes
+   .byte [ENERGIZER_VALUE_MASK | DIRECTION_LEFT]; pacmanAttributes
    .byte 0                          ; pacmanAteFruit
    .byte MAX_NUM_DOTS               ; dotsRemaining
    .byte STARTING_NUM_LIVES         ; playerState
@@ -4003,16 +4027,18 @@ MonsterColorTable
    .byte 0                          ; gameBoardState
 
 ClydeStartAttributes
-   .byte (((8 * 12) / 7) << 2) | DIRECTION_DOWN
+   .byte [7 << 2] | DIRECTION_DOWN
 InkyStartAttributes
-   .byte (((4 * 12) / 7) << 2) | DIRECTION_DOWN
-   .byte (((1 * 12) / 7) << 2) | DIRECTION_DOWN
-   .byte (((1 * 12) / 7) << 2) | DIRECTION_DOWN
-   .byte (((1 * 12) / 7) << 2) | DIRECTION_DOWN
+   .byte [5 << 2] | DIRECTION_DOWN
+   .byte [3 << 2] | DIRECTION_DOWN
+   .byte [1 << 2] | DIRECTION_DOWN
+   .byte [1 << 2] | DIRECTION_DOWN
 
 MonsterPointsLSB
-   .byte <_200Points - H_KERNEL, <_400Points - H_KERNEL
-   .byte <_800Points - H_KERNEL, <_1600Points - H_KERNEL
+   .byte <_200Points - H_KERNEL
+   .byte <_400Points - H_KERNEL
+   .byte <_800Points - H_KERNEL
+   .byte <_1600Points - H_KERNEL
 
 ;---------------------------------------------------------DetermineAllowedMotion
 ;
@@ -4025,7 +4051,7 @@ MonsterPointsLSB
 ;
 DetermineAllowedMotion
    ldy objectVertPos,x              ; get the object's vertical position
-   lda #(DOT_SECTIONS / 2) - 1      ; set to maximum section
+   lda #[DOT_SECTIONS / 2] - 1      ; set to maximum section
    cpy #H_KERNEL - 2
    beq .sectionFound                ; branch if object in top section
    cpy #140 + 1
@@ -4494,9 +4520,18 @@ IncrementScore
    rts
 
 FruitColorsTableLSB
-   .byte <CherriesColor, <StrawberryColor, <PeachColor, <PeachColor
-   .byte <AppleColor, <AppleColor, <GrapesColor, <GrapesColor
-   .byte <FlagshipColor, <FlagshipColor, <MushColor, <MushColor
+   .byte <CherriesColor
+   .byte <StrawberryColor
+   .byte <PeachColor
+   .byte <PeachColor
+   .byte <AppleColor
+   .byte <AppleColor
+   .byte <GrapesColor
+   .byte <GrapesColor
+   .byte <FlagshipColor
+   .byte <FlagshipColor
+   .byte <MushColor
+   .byte <MushColor
    .byte <KeyColor
 
 DotMaskingBits
@@ -4535,71 +4570,80 @@ PacmanDeathAnimationMSB
 ; odd number intersection.
 ;
 MazeRules
-   .byte MY_MOVE_UP|MY_MOVE_RIGHT | (ALLOW_MOVE_HORIZ >> 4)
-   .byte ALLOW_MOVE_HORIZ | (ALLOW_MOVE_HORIZ >> 4)
-   .byte MY_MOVE_UP|ALLOW_MOVE_HORIZ | (MY_MOVE_UP|ALLOW_MOVE_HORIZ) >> 4
-   .byte ALLOW_MOVE_HORIZ | (ALLOW_MOVE_HORIZ >> 4)
-   .byte ALLOW_MOVE_HORIZ | (MY_MOVE_UP|MY_MOVE_LEFT) >> 4
+   .byte MY_MOVE_UP|MY_MOVE_RIGHT         | (ALLOW_MOVE_HORIZ >> 4)
+   .byte ALLOW_MOVE_HORIZ                 | (ALLOW_MOVE_HORIZ >> 4)
+   .byte MY_MOVE_UP|ALLOW_MOVE_HORIZ      | (MY_MOVE_UP|ALLOW_MOVE_HORIZ) >> 4
+   .byte ALLOW_MOVE_HORIZ                 | (ALLOW_MOVE_HORIZ >> 4)
+   .byte ALLOW_MOVE_HORIZ                 | (MY_MOVE_UP|MY_MOVE_LEFT) >> 4
 
-   .byte MY_MOVE_RIGHT|MY_MOVE_DOWN | (MY_MOVE_UP|ALLOW_MOVE_HORIZ) >> 4
-   .byte MY_MOVE_UP|MY_MOVE_LEFT | (MY_MOVE_UP|MY_MOVE_RIGHT) >> 4
-   .byte MY_MOVE_LEFT|MY_MOVE_DOWN | (MY_MOVE_RIGHT|MY_MOVE_DOWN) >> 4
-   .byte MY_MOVE_UP|MY_MOVE_LEFT | (MY_MOVE_UP|MY_MOVE_RIGHT) >> 4
-   .byte MY_MOVE_UP|ALLOW_MOVE_HORIZ | (MY_MOVE_LEFT|MY_MOVE_DOWN) >> 4
+   .byte MY_MOVE_RIGHT|MY_MOVE_DOWN       | (MY_MOVE_UP|ALLOW_MOVE_HORIZ) >> 4
+   .byte MY_MOVE_UP|MY_MOVE_LEFT          | (MY_MOVE_UP|MY_MOVE_RIGHT) >> 4
+   .byte MY_MOVE_LEFT|MY_MOVE_DOWN        | (MY_MOVE_RIGHT|MY_MOVE_DOWN) >> 4
+   .byte MY_MOVE_UP|MY_MOVE_LEFT          | (MY_MOVE_UP|MY_MOVE_RIGHT) >> 4
+   .byte MY_MOVE_UP|ALLOW_MOVE_HORIZ      | (MY_MOVE_LEFT|MY_MOVE_DOWN) >> 4
 
-   .byte MY_MOVE_UP|MY_MOVE_RIGHT | (MY_MOVE_LEFT|MY_MOVE_DOWN) >> 4
-   .byte ALLOW_MOVE_VERT|MY_MOVE_RIGHT | (ALLOW_MOVE_HORIZ|MY_MOVE_DOWN) >> 4
-   .byte MY_MOVE_UP|ALLOW_MOVE_HORIZ | (MY_MOVE_UP|ALLOW_MOVE_HORIZ) >> 4
-   .byte ALLOW_MOVE_HORIZ|MY_MOVE_DOWN | (ALLOW_MOVE_VERT|MY_MOVE_LEFT) >> 4
-   .byte MY_MOVE_RIGHT|MY_MOVE_DOWN | (MY_MOVE_UP|MY_MOVE_LEFT) >> 4
+   .byte MY_MOVE_UP|MY_MOVE_RIGHT         | (MY_MOVE_LEFT|MY_MOVE_DOWN) >> 4
+   .byte ALLOW_MOVE_VERT|MY_MOVE_RIGHT    | (ALLOW_MOVE_HORIZ|MY_MOVE_DOWN) >> 4
+   .byte MY_MOVE_UP|ALLOW_MOVE_HORIZ      | (MY_MOVE_UP|ALLOW_MOVE_HORIZ) >> 4
+   .byte ALLOW_MOVE_HORIZ|MY_MOVE_DOWN    | (ALLOW_MOVE_VERT|MY_MOVE_LEFT) >> 4
+   .byte MY_MOVE_RIGHT|MY_MOVE_DOWN       | (MY_MOVE_UP|MY_MOVE_LEFT) >> 4
 
-   .byte MY_MOVE_RIGHT|MY_MOVE_DOWN | (ALLOW_MOVE_HORIZ >> 4)
+   .byte MY_MOVE_RIGHT|MY_MOVE_DOWN       | (ALLOW_MOVE_HORIZ >> 4)
    .byte ALLOW_MOVE_HORIZ|ALLOW_MOVE_VERT | (MY_MOVE_UP|ALLOW_MOVE_HORIZ) >> 4
-   .byte MY_MOVE_LEFT|MY_MOVE_DOWN | (MY_MOVE_RIGHT|MY_MOVE_DOWN) >> 4
-   .byte MY_MOVE_UP|ALLOW_MOVE_HORIZ | (ALLOW_MOVE_HORIZ|ALLOW_MOVE_VERT) >> 4
-   .byte ALLOW_MOVE_HORIZ | (MY_MOVE_LEFT|MY_MOVE_DOWN) >> 4
+   .byte MY_MOVE_LEFT|MY_MOVE_DOWN        | (MY_MOVE_RIGHT|MY_MOVE_DOWN) >> 4
+   .byte MY_MOVE_UP|ALLOW_MOVE_HORIZ      | (ALLOW_MOVE_HORIZ|ALLOW_MOVE_VERT) >> 4
+   .byte ALLOW_MOVE_HORIZ                 | (MY_MOVE_LEFT|MY_MOVE_DOWN) >> 4
 
-   .byte NO_MOVE | NO_MOVE
-   .byte ALLOW_MOVE_VERT | (ALLOW_MOVE_VERT|MY_MOVE_RIGHT) >> 4
-   .byte ALLOW_MOVE_HORIZ | (ALLOW_MOVE_HORIZ >> 4)
-   .byte ALLOW_MOVE_VERT|MY_MOVE_LEFT | (ALLOW_MOVE_VERT >> 4)
-   .byte NO_MOVE | NO_MOVE
+   .byte NO_MOVE                          | NO_MOVE
+   .byte ALLOW_MOVE_VERT                  | (ALLOW_MOVE_VERT|MY_MOVE_RIGHT) >> 4
+   .byte ALLOW_MOVE_HORIZ                 | (ALLOW_MOVE_HORIZ >> 4)
+   .byte ALLOW_MOVE_VERT|MY_MOVE_LEFT     | (ALLOW_MOVE_VERT >> 4)
+   .byte NO_MOVE                          | NO_MOVE
 
-   .byte ALLOW_MOVE_HORIZ | (ALLOW_MOVE_HORIZ >> 4)
+   .byte ALLOW_MOVE_HORIZ                 | (ALLOW_MOVE_HORIZ >> 4)
    .byte ALLOW_MOVE_VERT|ALLOW_MOVE_HORIZ | (MY_MOVE_LEFT|ALLOW_MOVE_VERT) >> 4
-   .byte NO_MOVE | NO_MOVE
-   .byte MY_MOVE_RIGHT|ALLOW_MOVE_VERT | (ALLOW_MOVE_VERT|ALLOW_MOVE_HORIZ) >> 4
-   .byte ALLOW_MOVE_HORIZ | (ALLOW_MOVE_HORIZ >> 4)
+   .byte NO_MOVE                          | NO_MOVE
+   .byte MY_MOVE_RIGHT|ALLOW_MOVE_VERT    | (ALLOW_MOVE_VERT|ALLOW_MOVE_HORIZ) >> 4
+   .byte ALLOW_MOVE_HORIZ                 | (ALLOW_MOVE_HORIZ >> 4)
 
-   .byte NO_MOVE | NO_MOVE
-   .byte ALLOW_MOVE_VERT | (MY_MOVE_RIGHT|MY_MOVE_DOWN) >> 4
-   .byte MY_MOVE_UP | ALLOW_MOVE_HORIZ | (MY_MOVE_UP|ALLOW_MOVE_HORIZ) >> 4
-   .byte MY_MOVE_LEFT|MY_MOVE_DOWN | (ALLOW_MOVE_VERT >> 4)
-   .byte NO_MOVE | NO_MOVE
+   .byte NO_MOVE                          | NO_MOVE
+   .byte ALLOW_MOVE_VERT                  | (MY_MOVE_RIGHT|MY_MOVE_DOWN) >> 4
+   .byte MY_MOVE_UP | ALLOW_MOVE_HORIZ    | (MY_MOVE_UP|ALLOW_MOVE_HORIZ) >> 4
+   .byte MY_MOVE_LEFT|MY_MOVE_DOWN        | (ALLOW_MOVE_VERT >> 4)
+   .byte NO_MOVE                          | NO_MOVE
 
-   .byte MY_MOVE_UP|MY_MOVE_RIGHT | (ALLOW_MOVE_HORIZ >> 4)
-   .byte ALLOW_MOVE_VERT|MY_MOVE_LEFT | (MY_MOVE_UP|MY_MOVE_RIGHT) >> 4
-   .byte MY_MOVE_LEFT|MY_MOVE_DOWN | (MY_MOVE_RIGHT|MY_MOVE_DOWN) >> 4
-   .byte MY_MOVE_UP|MY_MOVE_LEFT | (ALLOW_MOVE_VERT|MY_MOVE_RIGHT) >> 4
-   .byte ALLOW_MOVE_HORIZ | (MY_MOVE_UP|MY_MOVE_LEFT) >> 4
+   .byte MY_MOVE_UP|MY_MOVE_RIGHT         | (ALLOW_MOVE_HORIZ >> 4)
+   .byte ALLOW_MOVE_VERT|MY_MOVE_LEFT     | (MY_MOVE_UP|MY_MOVE_RIGHT) >> 4
+   .byte MY_MOVE_LEFT|MY_MOVE_DOWN        | (MY_MOVE_RIGHT|MY_MOVE_DOWN) >> 4
+   .byte MY_MOVE_UP|MY_MOVE_LEFT          | (ALLOW_MOVE_VERT|MY_MOVE_RIGHT) >> 4
+   .byte ALLOW_MOVE_HORIZ                 | (MY_MOVE_UP|MY_MOVE_LEFT) >> 4
 
-   .byte ALLOW_MOVE_VERT|MY_MOVE_RIGHT | (ALLOW_MOVE_HORIZ >> 4)
+   .byte ALLOW_MOVE_VERT|MY_MOVE_RIGHT    | (ALLOW_MOVE_HORIZ >> 4)
    .byte ALLOW_MOVE_VERT|ALLOW_MOVE_HORIZ | (MY_MOVE_DOWN|ALLOW_MOVE_HORIZ) >> 4
-   .byte MY_MOVE_UP|ALLOW_MOVE_HORIZ | (MY_MOVE_UP|ALLOW_MOVE_HORIZ) >> 4
-   .byte MY_MOVE_DOWN|ALLOW_MOVE_HORIZ | (ALLOW_MOVE_VERT|ALLOW_MOVE_HORIZ) >> 4
-   .byte ALLOW_MOVE_HORIZ | (ALLOW_MOVE_VERT|MY_MOVE_LEFT) >> 4
+   .byte MY_MOVE_UP|ALLOW_MOVE_HORIZ      | (MY_MOVE_UP|ALLOW_MOVE_HORIZ) >> 4
+   .byte MY_MOVE_DOWN|ALLOW_MOVE_HORIZ    | (ALLOW_MOVE_VERT|ALLOW_MOVE_HORIZ) >> 4
+   .byte ALLOW_MOVE_HORIZ                 | (ALLOW_MOVE_VERT|MY_MOVE_LEFT) >> 4
 
-   .byte MY_MOVE_DOWN|MY_MOVE_RIGHT | (ALLOW_MOVE_HORIZ >> 4)
-   .byte MY_MOVE_DOWN|ALLOW_MOVE_HORIZ | (ALLOW_MOVE_HORIZ >> 4)
-   .byte MY_MOVE_DOWN|MY_MOVE_LEFT | (MY_MOVE_DOWN|MY_MOVE_RIGHT) >> 4
-   .byte ALLOW_MOVE_HORIZ | (MY_MOVE_DOWN|ALLOW_MOVE_HORIZ) >> 4
-   .byte ALLOW_MOVE_HORIZ | (MY_MOVE_DOWN|MY_MOVE_LEFT) >> 4
+   .byte MY_MOVE_DOWN|MY_MOVE_RIGHT       | (ALLOW_MOVE_HORIZ >> 4)
+   .byte MY_MOVE_DOWN|ALLOW_MOVE_HORIZ    | (ALLOW_MOVE_HORIZ >> 4)
+   .byte MY_MOVE_DOWN|MY_MOVE_LEFT        | (MY_MOVE_DOWN|MY_MOVE_RIGHT) >> 4
+   .byte ALLOW_MOVE_HORIZ                 | (MY_MOVE_DOWN|ALLOW_MOVE_HORIZ) >> 4
+   .byte ALLOW_MOVE_HORIZ                 | (MY_MOVE_DOWN|MY_MOVE_LEFT) >> 4
 
 FruitHighScoreTable
-   .byte CHERRIES_SCORE >> 8, STRAWBERRY_SCORE >> 8, PEACH_SCORE >> 8
-   .byte PEACH_SCORE >> 8, APPLE_SCORE >> 8, APPLE_SCORE >> 8, GRAPE_SCORE >> 8
-   .byte GRAPE_SCORE >> 8, FLAGSHIP_SCORE >> 8, FLAGSHIP_SCORE >> 8
-   .byte MUSH_SCORE >> 8, MUSH_SCORE >> 8, KEY_SCORE >> 8;12
+   .byte [CHERRIES_SCORE >> 8]
+   .byte [STRAWBERRY_SCORE >> 8]
+   .byte [PEACH_SCORE >> 8]
+   .byte [PEACH_SCORE >> 8]
+   .byte [APPLE_SCORE >> 8]
+   .byte [APPLE_SCORE >> 8]
+   .byte [GRAPE_SCORE >> 8]
+   .byte [GRAPE_SCORE >> 8]
+   .byte [FLAGSHIP_SCORE >> 8]
+   .byte [FLAGSHIP_SCORE >> 8]
+   .byte [MUSH_SCORE >> 8]
+   .byte [MUSH_SCORE >> 8]
+   .byte [KEY_SCORE >> 8]
 
    IF PUBLISHER = ATARIAGE
 
