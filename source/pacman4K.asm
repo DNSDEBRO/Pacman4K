@@ -271,6 +271,10 @@ FASTER_SPEED            = FALSE     ; set to FALSE for original speed
 
    ENDIF
 
+;===============================================================================
+; H E A D E R - I N C L U D E S
+;===============================================================================
+
    include "macro.h"
    include "tia_constants.h"
    include "vcs.h"
@@ -288,7 +292,7 @@ FASTER_SPEED            = FALSE     ; set to FALSE for original speed
    ENDIF
 
 ;===============================================================================
-; F R A M E  T I M I N G S
+; F R A M E - T I M I N G S
 ;===============================================================================
 
    IF COMPILE_REGION = NTSC || COMPILE_REGION = PAL60
@@ -365,11 +369,9 @@ SPEED_CRUISE_ELROY2_02  = [SPRITE_FULL_SPEED * 21] / 20  ;105%
 SPEED_CRUISE_ELROY2_03  = [SPRITE_FULL_SPEED * 21] / 20  ;105%
 
 ;===============================================================================
-; C O L O R  C O N S T A N T S
+; C O L O R - C O N S T A N T S
 ;===============================================================================
 
-BLACK                   = $00
-WHITE                   = $0E
 DOT_COLOR               = WHITE
 EYE_COLOR               = WHITE
 MUSH_COLOR              = YELLOW + 10
@@ -2198,9 +2200,9 @@ PlayGameSounds
    lda gameBoardState               ; get the current game board state
    and #[GAME_BOARD_DONE | DEMO_MODE];keep D7 and D6
    bne .reduceLevelPauseTimer       ; skip game sounds if level done or in DEMO_MODE
-.playPacmanSounds
    bit playerState                  ; check current player state
-   bpl .checkToPlayPacmanEatingSounds; check for Pac-man eating sounds if not dieing
+   bpl .checkToPlayPacmanEatingSounds;check for Pac-man eating sounds if not dieing
+.playPacmanDeathSounds
    lda #11 + 1
    cmp pacmanDeathDelay             ; get Pac-man death delay value
    bcc .jmpSkipPlayGameSounds       ; branch if pausing after Pac-man was caught
